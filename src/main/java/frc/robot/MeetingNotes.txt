@@ -1,8 +1,8 @@
 // Elevator - Optical Sensor & Falcon 500 (TalonFX)
 Ramp Intake Tilt / Algae Ground Intake - REV Through Bore Encoder & Minion
 Aglae Grab Arm - Neo 550 (Spark Max)
-Climber Motor - REV Through Bore Encoder & Falcon 500 (TalonFX)
-Bill's Lunch - Johnson Electronics (44 Count Per Revolution, Talon SRX, Gadgeteer)
+// Climber Motor - REV Through Bore Encoder & Falcon 500 (TalonFX)
+// Bill's Lunch - Johnson Electronics (44 Count Per Revolution, Talon SRX, Gadgeteer)
 // Floor Intake Tilt - REV Through Bore Encoder & Falcon 500 (TalonFX) 100:1
 // Floor Intake Spin - Neo 550 (Spark Max)
 

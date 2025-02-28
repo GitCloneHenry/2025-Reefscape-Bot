@@ -1,9 +1,13 @@
 package frc.robot;
 
+import frc.robot.Constants.EncoderConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.ElevatorHomingCommand;
+import frc.robot.subsystems.BillsLunchSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -13,13 +17,19 @@ public class RobotContainer {
   private final CommandXboxController m_copilotController = 
       new CommandXboxController(OperatorConstants.kCopilotControllerPort);
 
-  private final ManipulatorSubsystem m_manipulatorSubsystem = 
-      new ManipulatorSubsystem();
+  private final ManipulatorSubsystem m_manipulatorSubsystem;
+
+  private final BillsLunchSubsystem m_billsLunchSubsystem = 
+      new BillsLunchSubsystem();
 
   // private final ElevatorSubsystem m_elevatorSubsystem = 
   //     new ElevatorSubsystem();
+  private final ClimberSubsystem m_climberSubsystem = 
+      new ClimberSubsystem();
 
   public RobotContainer() {
+    m_manipulatorSubsystem = new ManipulatorSubsystem();
+
     configureBindings();
   }
 
@@ -60,12 +70,20 @@ public class RobotContainer {
     Trigger copilotControllerLC = m_copilotController.leftStick();  // Copilot's Left Stick (Click)
     Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
 
-    driverControllerA.whileTrue(m_manipulatorSubsystem.getManipulatorDriveCommand(0.5));
-    driverControllerB.whileTrue(m_manipulatorSubsystem.getManipulatorDriveCommand(-0.5));
-    // driverControllerX.onTrue(m_manipulatorSubsystem.extendCoralManipulator());
-    // driverControllerY.onTrue(m_manipulatorSubsystem.retractCoralManipulator());
+    driverControllerA.whileTrue(m_manipulatorSubsystem.getManipulatorDriveCommand(0));
+    driverControllerB.whileTrue(m_manipulatorSubsystem.getManipulatorDriveCommand(-0.1));
+    driverControllerX.onTrue(Commands.runOnce(() -> {
+      m_manipulatorSubsystem.setSpeed(0.5);
+      m_billsLunchSubsystem.setPosition(-100);
+    }));
+    driverControllerX.onFalse(Commands.runOnce(() -> {
+      m_manipulatorSubsystem.setSpeed(0.1);
+      m_billsLunchSubsystem.setPosition(0);
+    }));
+    driverControllerU.onTrue(m_manipulatorSubsystem.extendCoralManipulator());
+    driverControllerD.onTrue(m_manipulatorSubsystem.retractCoralManipulator());
 
-    // driverControllerU.onTrue(m_elevatorSubsystem.moveElevatorToPositionCommand(100));
-    // driverControllerD.onTrue(m_elevatorSubsystem.moveElevatorToPositionCommand(0));
+    m_climberSubsystem.setDefaultCommand(
+      new RunCommand(() -> m_climberSubsystem.incrementClimberPosition(m_driverController.getLeftY()), m_climberSubsystem));
   }
 }

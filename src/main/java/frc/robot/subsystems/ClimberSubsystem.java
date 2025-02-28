@@ -9,62 +9,60 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.CANConstants;
 import frc.robot.Constants.DIOConstants;
+import frc.robot.Constants.EncoderConstants;
 
 public class ClimberSubsystem extends SubsystemBase {
-    private final TalonFX m_manipulatorAngleMotor = new TalonFX(CANConstants.kManipulatorAngleMotorID);
+    private final TalonFX m_climberAngleMotor = new TalonFX(CANConstants.kClimberAngleMotorID);
 
-    private final TalonFXConfiguration m_manipulatorAngleConfiguration = new TalonFXConfiguration();
+    private final TalonFXConfiguration m_climberAngleConfiguration = new TalonFXConfiguration();
 
     private final MotionMagicVoltage m_motionMagicVoltage = new MotionMagicVoltage(0).withSlot(0);
 
-    private final DutyCycleEncoder m_manipulatorAngleEncoder = new DutyCycleEncoder(DIOConstants.kManipulatorAngleEncoderID);
+    private final DutyCycleEncoder m_climberAngleEncoder = new DutyCycleEncoder(DIOConstants.kClimberAngleEncoderID);
 
-    private double minimumClimberPosition = 0;
-    private double maximumClimberPosition = 100;
+    public double m_targetClimberPosition = 0.0;
 
-    private double m_targetClimberPosition;
-
-    public ClimberSubsystem(CommandXboxController driverController) {
+    public ClimberSubsystem() {
+        waitMillis(5000);
         applyMotorConfigurations(); 
     }
 
+    public void waitMillis(double milliseconds) {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < milliseconds) {}
+    }
+
     public void applyMotorConfigurations() {
-        Slot0Configs angleSlot0 = m_manipulatorAngleConfiguration.Slot0;
+        Slot0Configs angleSlot0 = m_climberAngleConfiguration.Slot0;
 
-        MotionMagicConfigs angleMotionMagic = m_manipulatorAngleConfiguration.MotionMagic;
+        MotionMagicConfigs angleMotionMagic = m_climberAngleConfiguration.MotionMagic;
 
-        angleSlot0.kS = 0.24;
-        angleSlot0.kV = 0.12;
-        angleSlot0.kP = 0.11;
-        angleSlot0.kI = 0.5;
-        angleSlot0.kD = 0.001;
+        angleSlot0.kS = 0.0;
+        angleSlot0.kV = 0.0;
+        angleSlot0.kP = 2.0;
+        angleSlot0.kI = 0.0;
+        angleSlot0.kD = 0.0;
 
-        angleMotionMagic.MotionMagicCruiseVelocity = 80; 
-        angleMotionMagic.MotionMagicAcceleration   = 160;
-        angleMotionMagic.MotionMagicJerk           = 1600;
+        angleMotionMagic.MotionMagicCruiseVelocity = 100; 
+        angleMotionMagic.MotionMagicAcceleration   = 200;
+        angleMotionMagic.MotionMagicJerk           = 800;
 
-        m_manipulatorAngleMotor.getConfigurator().apply(
-                m_manipulatorAngleConfiguration, 0.050);
+        m_climberAngleMotor.getConfigurator().apply(
+                m_climberAngleConfiguration, 0.050);
         
-        m_manipulatorAngleMotor.setPosition(m_manipulatorAngleEncoder.get());
-        m_manipulatorAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+        m_climberAngleMotor.setPosition((0.4310413857760346 - m_climberAngleEncoder.get()) * 320);
+        m_climberAngleMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
     public void incrementClimberPosition(double value) {
-        double encoderPosition = m_manipulatorAngleMotor.getPosition().getValueAsDouble();
-
-        if (encoderPosition + value < minimumClimberPosition || encoderPosition + value > maximumClimberPosition) {
-            return;
-        }
-
-        m_targetClimberPosition += value;
+        m_targetClimberPosition = Math.min(Math.max(m_targetClimberPosition + value * 1.5, EncoderConstants.kMinimumAcceptableClimberPosition), EncoderConstants.kMaximumAcceptableClimberPosition);
     }
 
     @Override
     public void periodic() {
-        m_manipulatorAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetClimberPosition));
+        System.err.println(m_climberAngleMotor.getPosition().getValueAsDouble());
+        m_climberAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetClimberPosition));
     }
 }

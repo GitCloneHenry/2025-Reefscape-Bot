@@ -13,7 +13,7 @@ public class ElevatorHomingCommand extends Command {
 
     @Override 
     public void initialize() {
-        m_elevatorSubsystem.moveElevator(-0.2);
+        m_elevatorSubsystem.moveElevator(-0.01);
     }
 
     @Override
