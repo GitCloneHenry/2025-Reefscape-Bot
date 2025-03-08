@@ -21,30 +21,30 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs.Neo550;
 import frc.robot.Constants.CANConstants;
 import frc.robot.Constants.DIOConstants;
+import frc.robot.Constants.EncoderConstants;
 
 public class FloorIntakeSubsystem extends SubsystemBase {
-    private final SparkMax m_floorIntakeDriveMotor;
-    private final TalonFX  m_floorIntakeAngleMotor;
+    private final SparkMax m_floorIntakeDriveMotor = new SparkMax(CANConstants.kFloorIntakeDriveMotorID, MotorType.kBrushless);
+    private final TalonFX  m_floorIntakeAngleMotor = new TalonFX (CANConstants.kFloorIntakeAngleMotorID);;
 
     private final TalonFXConfiguration m_floorIntakeAngleConfiguration = new TalonFXConfiguration();
 
-    // private final RelativeEncoder m_floorIntakeDriveEncoder;
-
-    private final SparkClosedLoopController m_floorIntakeDriveController;
+    private final SparkClosedLoopController m_floorIntakeDriveController = m_floorIntakeDriveMotor.getClosedLoopController();
 
     private final MotionMagicVoltage m_motionMagicVoltage = new MotionMagicVoltage(0).withSlot(0);
 
     private final DutyCycleEncoder m_floorIntakeAngleEncoder = new DutyCycleEncoder(DIOConstants.kFloorIntakeAngleEncoderID);
 
+    private double m_targetIntakePosition = 0.0;
+
     public FloorIntakeSubsystem() {
-        m_floorIntakeDriveMotor = new SparkMax(CANConstants.kFloorIntakeDriveMotorID, MotorType.kBrushless);
-        m_floorIntakeAngleMotor = new TalonFX (CANConstants.kFloorIntakeAngleMotorID);
+        // waitMillis(2000);
+        // applyMotorConfigurations();
+    }
 
-        // m_floorIntakeDriveEncoder = m_floorIntakeDriveMotor.getEncoder();
-
-        m_floorIntakeDriveController = m_floorIntakeDriveMotor.getClosedLoopController();
-
-        applyMotorConfigurations();
+    public void waitMillis(double milliseconds) {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < milliseconds) {}
     }
 
     public void applyMotorConfigurations() {
@@ -52,11 +52,11 @@ public class FloorIntakeSubsystem extends SubsystemBase {
 
         MotionMagicConfigs angleMotionMagic = m_floorIntakeAngleConfiguration.MotionMagic;
 
-        angleSlot0.kS = 0.24;
-        angleSlot0.kV = 0.12;
-        angleSlot0.kP = 0.11;
-        angleSlot0.kI = 0.5;
-        angleSlot0.kD = 0.001;
+        angleSlot0.kS = 0.00;
+        angleSlot0.kV = 0.00;
+        angleSlot0.kP = 0.20;
+        angleSlot0.kI = 0.0;
+        angleSlot0.kD = 0.0;
 
         angleMotionMagic.MotionMagicCruiseVelocity = 80; 
         angleMotionMagic.MotionMagicAcceleration   = 160;
@@ -69,19 +69,26 @@ public class FloorIntakeSubsystem extends SubsystemBase {
                 ResetMode.kResetSafeParameters, 
                 PersistMode.kPersistParameters);
         
-        m_floorIntakeAngleMotor.setPosition(m_floorIntakeAngleEncoder.get());
-        m_floorIntakeAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+        m_floorIntakeAngleMotor.setPosition((m_floorIntakeAngleEncoder.get() - 0.304) * 49.5);
+        m_floorIntakeAngleMotor.setNeutralMode(NeutralModeValue.Coast);
     }
 
-    public Command extendAndIntake() {
+    public Command moveToPossition(double value) {
         return Commands.runOnce(() -> {
-            m_floorIntakeAngleMotor.setControl(m_motionMagicVoltage.withPosition(100));
-            m_floorIntakeDriveController.setReference(1, ControlType.kVelocity);
+            m_floorIntakeAngleMotor.setControl(m_motionMagicVoltage.withPosition(value));
+            // m_targetIntakePosition = Math.min(Math.max(value, EncoderConstants.kMinimumAcceptableFloorIntakePosition), EncoderConstants.kMaximumAcceptableFloorIntakePosition);
         }, this);
     }
 
-    public Command retractAndStop() {
-        m_floorIntakeAngleMotor.setControl(m_motionMagicVoltage.withPosition(100));
-        return Commands.runOnce(() -> m_floorIntakeDriveController.setReference(0, ControlType.kVelocity), this);
+    public Command setDrivePower(double value) {
+        return Commands.run(() -> {
+            m_floorIntakeDriveController.setReference(value, ControlType.kMAXMotionVelocityControl);
+        }, this);
+    }
+
+    @Override
+    public void periodic() {
+        System.err.println((m_floorIntakeAngleEncoder.get() - 0.304) * 49.5 + ", " + m_floorIntakeAngleMotor.getPosition().getValueAsDouble());
+        // System.err.println(m_floorIntakeAngleEncoder.get());
     }
 }

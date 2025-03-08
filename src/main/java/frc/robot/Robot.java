@@ -28,7 +28,9 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    m_robotContainer.startHomingProcess();
+  }
 
   @Override
   public void teleopPeriodic() {}

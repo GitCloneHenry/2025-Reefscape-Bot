@@ -43,7 +43,7 @@ public class BillsLunchSubsystem extends SubsystemBase {
     }
 
     public Command setSpeed(double speed) {
-        return new RunCommand(() -> {
+        return Commands.run(() -> {
             m_lunchDriveMotor.set(
                 ControlMode.PercentOutput, 
                 getEncoderPressed() ? 0 : speed

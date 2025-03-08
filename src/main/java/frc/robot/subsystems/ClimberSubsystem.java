@@ -22,16 +22,11 @@ public class ClimberSubsystem extends SubsystemBase {
 
     private final DutyCycleEncoder m_climberAngleEncoder = new DutyCycleEncoder(DIOConstants.kClimberAngleEncoderID);
 
-    public double m_targetClimberPosition = 0.0;
+    public double m_targetClimberPosition = EncoderConstants.kMaximumAcceptableClimberPosition;
 
     public ClimberSubsystem() {
-        waitMillis(5000);
-        applyMotorConfigurations(); 
-    }
-
-    public void waitMillis(double milliseconds) {
-        long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < milliseconds) {}
+        // waitMillis(2000);
+        // applyMotorConfigurations(); 
     }
 
     public void applyMotorConfigurations() {
@@ -62,7 +57,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        System.err.println(m_climberAngleMotor.getPosition().getValueAsDouble());
+        // System.err.println(m_climberAngleMotor.getPosition().getValueAsDouble());
         m_climberAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetClimberPosition));
     }
 }

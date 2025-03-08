@@ -2,10 +2,14 @@ package frc.robot;
 
 import frc.robot.Constants.EncoderConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.DeOrigamiCommand;
+import frc.robot.commands.ElevatorHomingCommand;
 import frc.robot.subsystems.BillsLunchSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.FloorIntakeSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.TiltRampSubsystem;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -17,20 +21,39 @@ public class RobotContainer {
   private final CommandXboxController m_copilotController = 
       new CommandXboxController(OperatorConstants.kCopilotControllerPort);
 
-  private final ManipulatorSubsystem m_manipulatorSubsystem;
+  private final ManipulatorSubsystem m_manipulatorSubsystem = 
+      new ManipulatorSubsystem();
 
   private final BillsLunchSubsystem m_billsLunchSubsystem = 
       new BillsLunchSubsystem();
 
-  // private final ElevatorSubsystem m_elevatorSubsystem = 
-  //     new ElevatorSubsystem();
+  private final TiltRampSubsystem m_tiltRampSubsystem =
+      new TiltRampSubsystem();
+
+  // private final FloorIntakeSubsystem m_floorIntakeSubsystem = 
+  //     new FloorIntakeSubsystem();
+
+  private final ElevatorSubsystem m_elevatorSubsystem = 
+      new ElevatorSubsystem();
+
   private final ClimberSubsystem m_climberSubsystem = 
       new ClimberSubsystem();
 
-  public RobotContainer() {
-    m_manipulatorSubsystem = new ManipulatorSubsystem();
+  private final DeOrigamiCommand m_deOrigamiCommand; 
 
+  public RobotContainer() {
+    m_deOrigamiCommand = new DeOrigamiCommand(null, m_manipulatorSubsystem, m_tiltRampSubsystem);
+    waitMillis(5000);
+    m_climberSubsystem.applyMotorConfigurations();
+    // m_floorIntakeSubsystem.applyMotorConfigurations();
+    m_manipulatorSubsystem.applyMotorConfigurations();
+    m_tiltRampSubsystem.applyMotorConfigurations();
     configureBindings();
+  }
+
+  public void waitMillis(double milliseconds) {
+    long startTime = System.currentTimeMillis();
+    while (System.currentTimeMillis() - startTime < milliseconds) {}
   }
 
   private void configureBindings() {
@@ -70,20 +93,100 @@ public class RobotContainer {
     Trigger copilotControllerLC = m_copilotController.leftStick();  // Copilot's Left Stick (Click)
     Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
 
-    driverControllerA.whileTrue(m_manipulatorSubsystem.getManipulatorDriveCommand(0));
-    driverControllerB.whileTrue(m_manipulatorSubsystem.getManipulatorDriveCommand(-0.1));
-    driverControllerX.onTrue(Commands.runOnce(() -> {
-      m_manipulatorSubsystem.setSpeed(0.5);
-      m_billsLunchSubsystem.setPosition(-100);
-    }));
-    driverControllerX.onFalse(Commands.runOnce(() -> {
-      m_manipulatorSubsystem.setSpeed(0.1);
-      m_billsLunchSubsystem.setPosition(0);
-    }));
-    driverControllerU.onTrue(m_manipulatorSubsystem.extendCoralManipulator());
-    driverControllerD.onTrue(m_manipulatorSubsystem.retractCoralManipulator());
+    
 
-    m_climberSubsystem.setDefaultCommand(
-      new RunCommand(() -> m_climberSubsystem.incrementClimberPosition(m_driverController.getLeftY()), m_climberSubsystem));
+    // copilotControllerA.onTrue(Commands.runOnce(
+    //   () -> {
+    //     m_tiltRampSubsystem.moveToPossition(-75 * 11 / 15);
+    //     m_tiltRampSubsystem.setDrivePower(1500);
+    //   }, m_tiltRampSubsystem
+    // ));
+    // copilotControllerB.onTrue(Commands.runOnce(
+    //   () -> {
+    //     m_tiltRampSubsystem.moveToPossition(0);
+    //     m_tiltRampSubsystem.setDrivePower(0);
+    //   }, m_tiltRampSubsystem
+    // ));
+    // copilotControllerY.onTrue(Commands.runOnce(
+    //   () -> {
+    //     m_elevatorSubsystem.incrementElevatorPosition();
+    //     m_manipulatorSubsystem.incrementManipulatorPosition();
+    //   }
+    // ));
+    // copilotControllerX.onTrue(Commands.runOnce(
+    //   () -> {
+    //     m_elevatorSubsystem.decrementElevatorPosition();
+    //     m_manipulatorSubsystem.decrementManipulatorPosition();
+    //   }
+    // ));
+
+    // copilotControllerLS.onTrue(Commands.run(
+    //   () -> {
+    //     System.err.println("uwoopsie, looks liek someone forgor to make this~ :3 :L");
+    //   }
+    // ));
+
+    // copilotControllerRS.onTrue(Commands.run(
+    //   () -> {
+    //     System.err.println("uwoopsie, looks liek someone forgor to make this~ :3 :L");
+    //   }
+    // ));
+
+    // copilotControllerLT.onTrue(Commands.run(
+    //   () -> {
+    //     m_manipulatorSubsystem.setSpeed(0.0);
+    //   }
+    // ));
+
+    // copilotControllerRT.onTrue(Commands.run(
+    //   () -> {
+    //     m_manipulatorSubsystem.setSpeed(-0.5);
+    //   }
+    // ));
+
+    // m_climberSubsystem.setDefaultCommand(
+    //   new RunCommand(() -> m_climberSubsystem.incrementClimberPosition(m_copilotController.getLeftY()), m_climberSubsystem));
+
+
+
+
+
+
+
+    // driverControllerX.onTrue(Commands.run(() -> {
+    //   m_manipulatorSubsystem.setSpeed(0.5);
+    //   m_billsLunchSubsystem.setPosition(-100);
+    // }));
+    // driverControllerX.onFalse(Commands.run(() -> {
+    //   m_manipulatorSubsystem.setSpeed(0.1);
+    //   m_billsLunchSubsystem.setPosition(0);
+    // }));
+    // driverControllerU.onTrue(Commands.run(() -> m_manipulatorSubsystem.extendCoralManipulatorToPercentage(122.5 / 90.0), m_manipulatorSubsystem));
+    // driverControllerU.onTrue(Commands.run(() -> m_manipulatorSubsystem.extendCoralManipulatorToPercentage(1.85), m_manipulatorSubsystem));
+    // driverControllerD.onTrue(m_manipulatorSubsystem.retractCoralManipulator());
+    // driverControllerL.onTrue(m_tiltRampSubsystem.moveToPossition(-75 * 55 / 75));
+    // driverControllerR.onTrue(m_tiltRampSubsystem.moveToPossition(0));
+    // driverControllerLC.onTrue(m_tiltRampSubsystem.setDrivePower(1500));
+    // driverControllerRC.onTrue(m_tiltRampSubsystem.setDrivePower(-1500));
+
+    // m_elevatorSubsystem.setDefaultCommand(
+    //   new RunCommand(() -> m_elevatorSubsystem.applyElevatorSpeed(-m_driverController.getRightY() / 20), m_elevatorSubsystem));
+
+    // driverControllerA.onTrue(Commands.run(() -> {
+    //   m_elevatorSubsystem.moveElevatorToPosition(0.0);
+    //   m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.5);
+    // }, m_elevatorSubsystem, m_manipulatorSubsystem));
+    // driverControllerB.onTrue(Commands.run(() -> {
+    //   m_elevatorSubsystem.moveElevatorToPosition(-420 * 36 / 100);
+    //   m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.5);
+    // }, m_elevatorSubsystem, m_manipulatorSubsystem));
+    // driverControllerA.onTrue(m_elevatorSubsystem.moveElevatorToPositionCommand(0.0));
+    // driverControllerB.onTrue(m_elevatorSubsystem.moveElevatorToPositionCommand(-420.0));
+  }
+
+  public void startHomingProcess() {
+    ElevatorHomingCommand elevatorHomingCommand = new ElevatorHomingCommand(m_elevatorSubsystem); 
+
+    elevatorHomingCommand.andThen(m_deOrigamiCommand).schedule();
   }
 }

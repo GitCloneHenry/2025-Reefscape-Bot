@@ -18,9 +18,11 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Configs.Neo550;
 import frc.robot.Constants.CANConstants;
 import frc.robot.Constants.DIOConstants;
+import frc.robot.Constants.EncoderConstants;
 
 public class TiltRampSubsystem extends SubsystemBase {
     private final SparkMax m_tiltRampDriveMotor = new SparkMax(CANConstants.kTiltRampDriveMotorID, MotorType.kBrushless);;
@@ -34,8 +36,16 @@ public class TiltRampSubsystem extends SubsystemBase {
 
     private final DutyCycleEncoder m_tiltRampAngleEncoder = new DutyCycleEncoder(DIOConstants.kTiltRampAngleEncoderID);
 
+    private double m_targetRampPosition = 0.0;
+
     public TiltRampSubsystem() {
-        applyMotorConfigurations();
+        // waitMillis(3000);
+        // applyMotorConfigurations();
+    }
+
+    public void waitMillis(double milliseconds) {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < milliseconds) {}
     }
 
     public void applyMotorConfigurations() {
@@ -45,11 +55,11 @@ public class TiltRampSubsystem extends SubsystemBase {
 
         m_tiltRampAngleConfiguration.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
-        angleSlot0.kS = 0.24;
-        angleSlot0.kV = 0.12;
-        angleSlot0.kP = 0.11;
-        angleSlot0.kI = 0.5;
-        angleSlot0.kD = 0.001;
+        angleSlot0.kS = 0.0;
+        angleSlot0.kV = 0.0;
+        angleSlot0.kP = 0.45;
+        angleSlot0.kI = 0.0;
+        angleSlot0.kD = 0.0;
 
         angleMotionMagic.MotionMagicCruiseVelocity = 80; 
         angleMotionMagic.MotionMagicAcceleration   = 160;
@@ -61,21 +71,33 @@ public class TiltRampSubsystem extends SubsystemBase {
                 Neo550.neoConfig, 
                 ResetMode.kResetSafeParameters, 
                 PersistMode.kPersistParameters);
-    
 
-        m_tiltRampAngleMotor.setPosition(m_tiltRampAngleEncoder.get());
+        m_tiltRampAngleMotor.setPosition((m_tiltRampAngleEncoder.get() - 0.6) * 300.0);
         m_tiltRampAngleMotor.setNeutralMode(NeutralModeValue.Brake);
     }
 
-    public Command extendAndIntake() {
+    public Command moveToPossitionCommand(double value) {
         return Commands.runOnce(() -> {
-            m_tiltRampAngleMotor.setControl(m_motionMagicVoltage.withPosition(100));
-            m_tiltRampDriveController.setReference(1, ControlType.kVelocity);
+            m_targetRampPosition = Math.min(Math.max(value, EncoderConstants.kMinimumAcceptableTiltRampPosition), EncoderConstants.kMaximumAcceptableTiltRampPosition);
         }, this);
     }
 
-    public Command retractAndStop() {
-        m_tiltRampAngleMotor.setControl(m_motionMagicVoltage.withPosition(100));
-        return Commands.runOnce(() -> m_tiltRampDriveController.setReference(0, ControlType.kVelocity), this);
+    public void moveToPossition(double value) {
+        m_targetRampPosition = Math.min(Math.max(value, EncoderConstants.kMinimumAcceptableTiltRampPosition), EncoderConstants.kMaximumAcceptableTiltRampPosition);
     }
+
+    public Command setDrivePowerCommand(double value) {
+        return Commands.run(() -> {
+            m_tiltRampDriveController.setReference(value, ControlType.kMAXMotionVelocityControl);
+        }, this);
+    }
+
+    public void setDrivePower(double value) {
+        m_tiltRampDriveController.setReference(value, ControlType.kMAXMotionVelocityControl);
+    }
+
+    @Override
+    public void periodic() {
+        m_tiltRampAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetRampPosition));
+    };
 }

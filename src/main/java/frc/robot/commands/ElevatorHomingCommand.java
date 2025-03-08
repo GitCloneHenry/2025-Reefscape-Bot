@@ -13,24 +13,30 @@ public class ElevatorHomingCommand extends Command {
 
     @Override 
     public void initialize() {
-        m_elevatorSubsystem.moveElevator(-0.01);
+        m_elevatorSubsystem.moveElevator(-0.05);
     }
 
     @Override
     public void execute() {
-        if (m_elevatorSubsystem.isSensorTriggered()) {
-            m_elevatorSubsystem.moveElevator(0.0);
-            m_elevatorSubsystem.resetEncoder();
+        System.err.println(m_elevatorSubsystem.getEncoderPosition());
+        if (m_elevatorSubsystem.getEncoderPosition() < -10) {
+            m_elevatorSubsystem.moveElevator(0.05);
         }
+        
+        // if (!m_elevatorSubsystem.isSensorTriggered()) {
+        //     m_elevatorSubsystem.moveElevator(0.0);
+        //     // m_elevatorSubsystem.resetEncoder();
+        // }
     }
 
     @Override
     public boolean isFinished() {
-        return m_elevatorSubsystem.isSensorTriggered();
+        return !m_elevatorSubsystem.isSensorTriggered();
     }
 
     @Override
     public void end(boolean interrupted) {
         m_elevatorSubsystem.moveElevator(0.0);
+        m_elevatorSubsystem.resetEncoder();
     }
 }

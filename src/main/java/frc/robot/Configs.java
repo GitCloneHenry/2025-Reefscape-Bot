@@ -13,13 +13,19 @@ public final class Configs {
         static {
             double floorIntakeDriveFeedForward = 1 / ModuleConstants.kFloorIntakeDriveFreeSpeedRps;
 
-            neoConfig.idleMode(IdleMode.kCoast).smartCurrentLimit(12);
+            neoConfig.idleMode(IdleMode.kCoast).smartCurrentLimit(10);
             neoConfig
                 .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(0.04, 0.0, 0.0)
-                .velocityFF(floorIntakeDriveFeedForward)
+                .pid(0.0, 0.0, 0.0)
+                .velocityFF(0.00036)
                 .outputRange(-1, 1);
+            neoConfig
+                .closedLoop
+                .maxMotion
+                .maxVelocity(700)
+                .maxAcceleration(1800)
+                .allowedClosedLoopError(0.01);
         }
     }
 }

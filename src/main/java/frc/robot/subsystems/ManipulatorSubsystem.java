@@ -40,13 +40,17 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
     private double m_desiredPosition = 0.0;
 
+    private final double[] m_manipulatorIncrements = { 1, 1, 1 };
+
+    private int m_positionPointer = 0;
+
     /**Creates a Manipulator Subsystem
      * This is used to control the coral manipulator.
      */
     public ManipulatorSubsystem() { 
-        waitMillis(5000);
-        // Applies motor configurations.
-        applyMotorConfigurations();
+        // waitMillis(2000);
+        // // Applies motor configurations.
+        // applyMotorConfigurations();
 
         SmartDashboard.putNumber("FF", 0);
     }
@@ -130,12 +134,16 @@ public class ManipulatorSubsystem extends SubsystemBase {
     public Command extendCoralManipulator() {
         // Define a new command that moves the TalonFX to the desired extension
         return new RunCommand(() -> 
-            {m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended;}  
+            {m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended + 1.3;}  
         /*m_manipulatorAngleMotor.setControl(
                 m_motionMagicVoltage.withPosition(
                     EncoderConstants.kDesiredManipulatorPositionExtended)
             )*/, this
         );
+    }
+
+    public void extendCoralManipulatorToPercentage(double percent) {
+        m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * percent;
     }
 
     /**Retracts the Coral Manipulator
@@ -150,6 +158,16 @@ public class ManipulatorSubsystem extends SubsystemBase {
                     EncoderConstants.kDesiredManipulatorPositionRetracted)
             )*/, this
         );
+    }
+
+    public void incrementManipulatorPosition() {
+        m_positionPointer = Math.min(m_positionPointer + 1, 2);
+        m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * m_manipulatorIncrements[m_positionPointer];
+    }
+
+    public void decrementManipulatorPosition() {
+        m_positionPointer = Math.max(m_positionPointer - 1, 0);
+        m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * m_manipulatorIncrements[m_positionPointer];
     }
 
     @Override
