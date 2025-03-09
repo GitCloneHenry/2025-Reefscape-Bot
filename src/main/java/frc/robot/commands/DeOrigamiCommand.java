@@ -6,15 +6,13 @@ import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.TiltRampSubsystem;
 
 public class DeOrigamiCommand extends Command {
-    private final FloorIntakeSubsystem m_floorIntakeSubsystem;
     private final ManipulatorSubsystem m_manipulatorSubsystem; 
     private final TiltRampSubsystem m_tiltRampSubsystem;
 
     Command tiltRampCommand;
     Command manipulatorCommand;
 
-    public DeOrigamiCommand(FloorIntakeSubsystem floorIntakeSubsystem, ManipulatorSubsystem manipulatorSubsystem, TiltRampSubsystem tiltRampSubsystem) {
-        m_floorIntakeSubsystem = floorIntakeSubsystem;
+    public DeOrigamiCommand(ManipulatorSubsystem manipulatorSubsystem, TiltRampSubsystem tiltRampSubsystem) {
         m_manipulatorSubsystem = manipulatorSubsystem;
         m_tiltRampSubsystem = tiltRampSubsystem;
 

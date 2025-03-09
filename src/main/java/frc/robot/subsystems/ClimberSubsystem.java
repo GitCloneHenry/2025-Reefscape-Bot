@@ -40,9 +40,9 @@ public class ClimberSubsystem extends SubsystemBase {
         angleSlot0.kI = 0.0;
         angleSlot0.kD = 0.0;
 
-        angleMotionMagic.MotionMagicCruiseVelocity = 100; 
-        angleMotionMagic.MotionMagicAcceleration   = 200;
-        angleMotionMagic.MotionMagicJerk           = 800;
+        angleMotionMagic.MotionMagicCruiseVelocity = 4500; 
+        angleMotionMagic.MotionMagicAcceleration   = 7000;
+        angleMotionMagic.MotionMagicJerk           = 21000;
 
         m_climberAngleMotor.getConfigurator().apply(
                 m_climberAngleConfiguration, 0.050);

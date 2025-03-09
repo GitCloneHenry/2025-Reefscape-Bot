@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -9,6 +11,8 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.ReverseLimitValue;
+import com.ctre.phoenix6.signals.ForwardLimitValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -73,9 +77,17 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
         // Defines a configuration for the MotionMagic
         MotionMagicConfigs angleMotionMagic = m_manipulatorAngleConfiguration.MotionMagic;
+        // CurrentLimitsConfigs currentLimitsConfigs = m_manipulatorDriveConfiguration.CurrentLimits;
+        // HardwareLimitSwitchConfigs hardwareLimitSwitchConfigs = m_manipulatorAngleConfiguration.HardwareLimitSwitch;
 
         // Tells the TalonFXS that it's connected to a Minion motor.
         m_manipulatorDriveConfiguration.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
+
+        // currentLimitsConfigs.StatorCurrentLimit = 10;
+        // currentLimitsConfigs.StatorCurrentLimitEnable = true;
+
+        // hardwareLimitSwitchConfigs.ForwardLimitEnable = false;
+        // hardwareLimitSwitchConfigs.ReverseLimitEnable = false;
 
         driveSlot0.kS = 0.24;  // Static Feedforward value for TalonFXS
         driveSlot0.kV = 0.12;  // Velocity Feedforward value for TalonFXS
@@ -83,11 +95,11 @@ public class ManipulatorSubsystem extends SubsystemBase {
         driveSlot0.kI = 0.5;   // Integral value for TalonFXS
         driveSlot0.kD = 0.001; // Derivative value for TalonFXS
 
-        angleSlot0.kS = 0.10;  // Static Feedforward value for TalonFX
-        angleSlot0.kV = 0.10;  // Velocity Feedforward value for TalonFX
-        angleSlot0.kP = 1.05;  // Proportion value for TalonFX
-        angleSlot0.kI = 0.00005;   // Integral value for TalonFX
-        angleSlot0.kD = 0.0; // Derivative value for TalonFX
+        angleSlot0.kS = 0.10;    // Static Feedforward value for TalonFX
+        angleSlot0.kV = 0.10;    // Velocity Feedforward value for TalonFX
+        angleSlot0.kP = 1.05;    // Proportion value for TalonFX
+        angleSlot0.kI = 0.00005; // Integral value for TalonFX
+        angleSlot0.kD = 0.0;     // Derivative value for TalonFX
 
         angleMotionMagic.MotionMagicCruiseVelocity = 110;  // Maximum MotionMagic Velocity
         angleMotionMagic.MotionMagicAcceleration   = 190;  // Maximum MotionMagic Acceleration
@@ -168,6 +180,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     public void decrementManipulatorPosition() {
         m_positionPointer = Math.max(m_positionPointer - 1, 0);
         m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * m_manipulatorIncrements[m_positionPointer];
+    }
+
+    public boolean getEncoderPressed() {
+        return m_manipulatorDriveMotor.getForwardLimit().getValue() == ForwardLimitValue.ClosedToGround;
     }
 
     @Override

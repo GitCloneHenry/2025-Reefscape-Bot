@@ -1,21 +1,38 @@
 package frc.robot;
 
 import frc.robot.Constants.EncoderConstants;
+import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.DeOrigamiCommand;
 import frc.robot.commands.ElevatorHomingCommand;
+import frc.robot.commands.ScoringCommand;
+import frc.robot.commands.TagCenteringCommand;
 import frc.robot.subsystems.BillsLunchSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FloorIntakeSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.TiltRampSubsystem;
+
+import org.photonvision.PhotonCamera;
+
+import com.ctre.phoenix6.hardware.TalonFXS;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
+  // The robot's subsystems
+  public final DriveSubsystem m_robotDrive = new DriveSubsystem();
+
+  // The camera used for april tag detection
+  public final PhotonCamera m_aprilTagCamera = new PhotonCamera("USB_ATag_Camera");
+
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
   private final CommandXboxController m_copilotController = 
@@ -33,22 +50,45 @@ public class RobotContainer {
   // private final FloorIntakeSubsystem m_floorIntakeSubsystem = 
   //     new FloorIntakeSubsystem();
 
-  private final ElevatorSubsystem m_elevatorSubsystem = 
-      new ElevatorSubsystem();
+  // private final ElevatorSubsystem m_elevatorSubsystem = 
+  //     new ElevatorSubsystem();
 
   private final ClimberSubsystem m_climberSubsystem = 
       new ClimberSubsystem();
 
   private final DeOrigamiCommand m_deOrigamiCommand; 
+  private final ScoringCommand m_scoringCommand;
+
+  // The default command for the robot's drivetrain
+  public final RunCommand m_defaultDriveCommand;
 
   public RobotContainer() {
-    m_deOrigamiCommand = new DeOrigamiCommand(null, m_manipulatorSubsystem, m_tiltRampSubsystem);
+    m_deOrigamiCommand = new DeOrigamiCommand(m_manipulatorSubsystem, m_tiltRampSubsystem);
+    m_scoringCommand = new ScoringCommand(m_manipulatorSubsystem, m_billsLunchSubsystem, m_tiltRampSubsystem);
     waitMillis(5000);
     m_climberSubsystem.applyMotorConfigurations();
     // m_floorIntakeSubsystem.applyMotorConfigurations();
     m_manipulatorSubsystem.applyMotorConfigurations();
     m_tiltRampSubsystem.applyMotorConfigurations();
     configureBindings();
+
+    // Define the default drive command
+    m_defaultDriveCommand = new RunCommand(
+        // The left stick controls translation of the robot.
+        // Turning is controlled by the X axis of the right stick.
+        () ->
+            m_robotDrive.drive(
+                -MathUtil.applyDeadband(
+                    m_driverController.getLeftY() * 0.5, OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(
+                    m_driverController.getLeftX() * 0.5, OIConstants.kDriveDeadband),
+                -MathUtil.applyDeadband(
+                    m_driverController.getRightX() * 0.5, OIConstants.kDriveDeadband),
+                false),
+        m_robotDrive);
+
+    // Configure default commands
+    m_robotDrive.setDefaultCommand(this.m_defaultDriveCommand);
   }
 
   public void waitMillis(double milliseconds) {
@@ -93,20 +133,42 @@ public class RobotContainer {
     Trigger copilotControllerLC = m_copilotController.leftStick();  // Copilot's Left Stick (Click)
     Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
 
-    
+    driverControllerA.onTrue(new TagCenteringCommand(this, new Translation2d(0, 0)));
+
+    // driverControllerA.onTrue(new RunCommand(() -> {
+    //   m_manipulatorSubsystem.extendCoralManipulatorToPercentage(1.0);
+    //   m_manipulatorSubsystem.setSpeed(0.5);
+    // }, m_manipulatorSubsystem));
+    // driverControllerB.onTrue(new RunCommand(() -> {
+    //   m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.0);
+    //   m_manipulatorSubsystem.setSpeed(0);
+    // }, m_manipulatorSubsystem));
+
+    // driverControllerA.onTrue(Commands.runOnce(
+    //   () -> {
+    //     m_tiltRampSubsystem.moveToPossition(-75 * 45 / 90);
+    //   }, m_tiltRampSubsystem
+    // ));
 
     // copilotControllerA.onTrue(Commands.runOnce(
     //   () -> {
     //     m_tiltRampSubsystem.moveToPossition(-75 * 11 / 15);
-    //     m_tiltRampSubsystem.setDrivePower(1500);
+    //     m_tiltRampSubsystem.setDrivePower(-1500);
     //   }, m_tiltRampSubsystem
     // ));
-    // copilotControllerB.onTrue(Commands.runOnce(
-    //   () -> {
-    //     m_tiltRampSubsystem.moveToPossition(0);
-    //     m_tiltRampSubsystem.setDrivePower(0);
-    //   }, m_tiltRampSubsystem
-    // ));
+    copilotControllerB.onTrue(Commands.runOnce(
+      () -> {
+        m_tiltRampSubsystem.moveToPossition(/* -75 * 30 / 90*/ -65);
+        m_tiltRampSubsystem.setDrivePower(0);
+      }, m_tiltRampSubsystem
+    ));
+
+    // driverControllerX.onTrue(m_scoringCommand);
+    // driverControllerY.onTrue(new RunCommand(() -> {
+    //   m_manipulatorSubsystem.setSpeed(-0.1);
+    //   m_billsLunchSubsystem.setPosition(0);
+    // }, m_manipulatorSubsystem, m_billsLunchSubsystem));
+
     // copilotControllerY.onTrue(Commands.runOnce(
     //   () -> {
     //     m_elevatorSubsystem.incrementElevatorPosition();
@@ -144,23 +206,9 @@ public class RobotContainer {
     //   }
     // ));
 
-    // m_climberSubsystem.setDefaultCommand(
-    //   new RunCommand(() -> m_climberSubsystem.incrementClimberPosition(m_copilotController.getLeftY()), m_climberSubsystem));
+    m_climberSubsystem.setDefaultCommand(
+      new RunCommand(() -> m_climberSubsystem.incrementClimberPosition(m_copilotController.getLeftY()), m_climberSubsystem));
 
-
-
-
-
-
-
-    // driverControllerX.onTrue(Commands.run(() -> {
-    //   m_manipulatorSubsystem.setSpeed(0.5);
-    //   m_billsLunchSubsystem.setPosition(-100);
-    // }));
-    // driverControllerX.onFalse(Commands.run(() -> {
-    //   m_manipulatorSubsystem.setSpeed(0.1);
-    //   m_billsLunchSubsystem.setPosition(0);
-    // }));
     // driverControllerU.onTrue(Commands.run(() -> m_manipulatorSubsystem.extendCoralManipulatorToPercentage(122.5 / 90.0), m_manipulatorSubsystem));
     // driverControllerU.onTrue(Commands.run(() -> m_manipulatorSubsystem.extendCoralManipulatorToPercentage(1.85), m_manipulatorSubsystem));
     // driverControllerD.onTrue(m_manipulatorSubsystem.retractCoralManipulator());
@@ -185,8 +233,9 @@ public class RobotContainer {
   }
 
   public void startHomingProcess() {
-    ElevatorHomingCommand elevatorHomingCommand = new ElevatorHomingCommand(m_elevatorSubsystem); 
+    // ElevatorHomingCommand elevatorHomingCommand = new ElevatorHomingCommand(m_elevatorSubsystem); 
 
-    elevatorHomingCommand.andThen(m_deOrigamiCommand).schedule();
+    // elevatorHomingCommand.andThen(m_deOrigamiCommand).schedule();
+    // m_deOrigamiCommand.schedule();
   }
 }

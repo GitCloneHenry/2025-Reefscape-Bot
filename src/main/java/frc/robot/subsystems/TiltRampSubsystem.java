@@ -96,8 +96,13 @@ public class TiltRampSubsystem extends SubsystemBase {
         m_tiltRampDriveController.setReference(value, ControlType.kMAXMotionVelocityControl);
     }
 
+    public double getPosition() {
+        return m_tiltRampAngleMotor.getPosition().getValueAsDouble();
+    }
+
     @Override
     public void periodic() {
         m_tiltRampAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetRampPosition));
+        // System.err.println(m_tiltRampAngleMotor.getPosition().getValueAsDouble());
     };
 }
