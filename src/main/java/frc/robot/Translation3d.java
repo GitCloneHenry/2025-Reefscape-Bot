@@ -1,5 +1,3 @@
 package frc.robot;
 
-public class Translation3d {
-
-}
+public class Translation3d {}

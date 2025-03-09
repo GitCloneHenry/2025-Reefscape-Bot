@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_robotContainer.startHomingProcess();
+    m_robotContainer.runStartCommands();
   }
 
   @Override

@@ -126,9 +126,18 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     // Convert the commanded speeds into the correct units for the drivetrain
-    double xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond * (slowMode ? DriveConstants.kSlowModeSpeedPercentage : 1);
-    double ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond * (slowMode ? DriveConstants.kSlowModeSpeedPercentage : 1);
-    double rotDelivered = rot * DriveConstants.kMaxAngularSpeed * (slowMode ? DriveConstants.kSlowModeSpeedPercentage : 1);
+    double xSpeedDelivered =
+        xSpeed
+            * DriveConstants.kMaxSpeedMetersPerSecond
+            * (slowMode ? DriveConstants.kSlowModeSpeedPercentage : 1);
+    double ySpeedDelivered =
+        ySpeed
+            * DriveConstants.kMaxSpeedMetersPerSecond
+            * (slowMode ? DriveConstants.kSlowModeSpeedPercentage : 1);
+    double rotDelivered =
+        rot
+            * DriveConstants.kMaxAngularSpeed
+            * (slowMode ? DriveConstants.kSlowModeSpeedPercentage : 1);
 
     var swerveModuleStates =
         DriveConstants.kDriveKinematics.toSwerveModuleStates(
@@ -146,17 +155,26 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Enables the robot's slow mode */
   public Command enableSlowMode() {
-    return Commands.runOnce(() -> { slowMode = true; });
+    return Commands.runOnce(
+        () -> {
+          slowMode = true;
+        });
   }
 
   /** Disables the robot's slow mode */
   public Command disableSlowMode() {
-    return Commands.runOnce(() -> { slowMode = false; });
+    return Commands.runOnce(
+        () -> {
+          slowMode = false;
+        });
   }
 
   /** Zeroes the heading of the robot. */
   public Command zeroHeading() {
-    return Commands.runOnce(() -> { m_gyro.reset(); });
+    return Commands.runOnce(
+        () -> {
+          m_gyro.reset();
+        });
   }
 
   /** Drives the robot relative to the head of the robot */

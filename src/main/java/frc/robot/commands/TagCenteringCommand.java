@@ -85,14 +85,18 @@ public class TagCenteringCommand extends Command {
     Transform3d cameraToTag = bestTarget.getBestCameraToTarget();
     Transform3d robotToTag = VisionConstants.robotToCamera.plus(cameraToTag);
     Translation2d tagOffset = robotToTag.getTranslation().toTranslation2d();
-    Translation2d targetPosition = driveSubsystem.getPose().getTranslation().plus(
-      tagOffset.rotateBy(driveSubsystem.getPose().getRotation())
-    );  
+    Translation2d targetPosition =
+        driveSubsystem
+            .getPose()
+            .getTranslation()
+            .plus(tagOffset.rotateBy(driveSubsystem.getPose().getRotation()));
 
     // Rotation2d targetRotation = Rotation2d.fromRadians(
-      // Math.atan2(tagOffset.getY(), tagOffset.getX())
+    // Math.atan2(tagOffset.getY(), tagOffset.getX())
     // ).plus(driveSubsystem.getPose().getRotation());
-    Rotation2d targetRotation = Rotation2d.fromDegrees(cameraToTag.getRotation().getZ()).plus(driveSubsystem.getPose().getRotation());
+    Rotation2d targetRotation =
+        Rotation2d.fromDegrees(cameraToTag.getRotation().getZ())
+            .plus(driveSubsystem.getPose().getRotation());
 
     Translation2d robotPosition = driveSubsystem.getPose().getTranslation();
     // double aprilTagAngle = targetRotation.getRadians();
@@ -100,10 +104,12 @@ public class TagCenteringCommand extends Command {
     // double sinAng = Math.sin(targetRotation.getRadians() + 3 * Math.PI / 2.0);
     // double cosAng = Math.cos(targetRotation.getRadians() + 3 * Math.PI / 2.0);
 
-    // double x = sinAng*cosAng*(robotPosition.getY() - targetPosition.getY())+robotPosition.getX()*cosAng*cosAng+targetPosition.getX()*sinAng*sinAng;
+    // double x = sinAng*cosAng*(robotPosition.getY() -
+    // targetPosition.getY())+robotPosition.getX()*cosAng*cosAng+targetPosition.getX()*sinAng*sinAng;
     // double y = sinAng*(x - targetPosition.getX()) / cosAng + targetPosition.getY();
 
-    // double dist = Math.sqrt(Math.pow(x - robotPosition.getX(), 2.0) + Math.pow(y - robotPosition.getY(), 2.0));
+    // double dist = Math.sqrt(Math.pow(x - robotPosition.getX(), 2.0) + Math.pow(y -
+    // robotPosition.getY(), 2.0));
 
     // double intermediateX = targetPosition.getX() - dist * Math.cos(aprilTagAngle);
     // double intermediateY = targetPosition.getY() - dist * Math.sin(aprilTagAngle);
@@ -124,7 +130,11 @@ public class TagCenteringCommand extends Command {
     List<Waypoint> waypoints =
         PathPlannerPath.waypointsFromPoses(
             this.driveSubsystem.getPose(),
-            new Pose2d(targetPosition.minus(new Translation2d(0.4, targetRotation)).minus(translation.rotateBy(driveSubsystem.getPose().getRotation())), targetRotation));
+            new Pose2d(
+                targetPosition
+                    .minus(new Translation2d(0.4, targetRotation))
+                    .minus(translation.rotateBy(driveSubsystem.getPose().getRotation())),
+                targetRotation));
 
     PathConstraints pathConstraints =
         new PathConstraints(
@@ -139,7 +149,8 @@ public class TagCenteringCommand extends Command {
     // PathPlannerPath path2 = new PathPlannerPath(waypoints2, pathConstraints, null, goalEndState);
 
     PPHolonomicDriveController holonomicDriveController =
-        new PPHolonomicDriveController(new PIDConstants(5.0, 0.1, 0.0), new PIDConstants(10.0, 0.5, 0.2));
+        new PPHolonomicDriveController(
+            new PIDConstants(5.0, 0.1, 0.0), new PIDConstants(10.0, 0.5, 0.2));
 
     double robotMass = Units.lbsToKilograms(105);
     double trackWidth = DriveConstants.kTrackWidth;
