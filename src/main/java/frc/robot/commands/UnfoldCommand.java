@@ -14,11 +14,14 @@ public class UnfoldCommand extends Command {
   private final RobotContainer m_robotContainer;
 
   public UnfoldCommand(
-      ManipulatorSubsystem manipulatorSubsystem, TiltRampSubsystem tiltRampSubsystem, ClimberSubsystem climberSubsystem, RobotContainer robotContainer) {
+      ManipulatorSubsystem manipulatorSubsystem,
+      TiltRampSubsystem tiltRampSubsystem,
+      ClimberSubsystem climberSubsystem,
+      RobotContainer robotContainer) {
     m_manipulatorSubsystem = manipulatorSubsystem;
     m_tiltRampSubsystem = tiltRampSubsystem;
     m_climberSubsystem = climberSubsystem;
-    m_robotContainer = robotContainer; 
+    m_robotContainer = robotContainer;
   }
 
   @Override
@@ -31,7 +34,9 @@ public class UnfoldCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return m_tiltRampSubsystem.getErrorFromTarget() < 0.5 && m_manipulatorSubsystem.getErrorFromTarget() < 0.5 && m_climberSubsystem.getErrorFromTarget() < 0.5;
+    return m_tiltRampSubsystem.getErrorFromTarget() < 0.5
+        && m_manipulatorSubsystem.getErrorFromTarget() < 0.5
+        && m_climberSubsystem.getErrorFromTarget() < 0.5;
   }
 
   @Override

@@ -57,10 +57,8 @@ public class ClimberSubsystem extends SubsystemBase {
   public void setClimberPosition(double value) {
     m_targetClimberPosition =
         Math.min(
-            Math.max(
-              value, EncoderConstants.kMinimumAcceptableClimberPosition
-            ), EncoderConstants.kMaximumAcceptableClimberPosition
-        );
+            Math.max(value, EncoderConstants.kMinimumAcceptableClimberPosition),
+            EncoderConstants.kMaximumAcceptableClimberPosition);
   }
 
   public double getErrorFromTarget() {

@@ -147,6 +147,7 @@ public final class Constants {
   }
 
   public static final class VisionConstants {
+    public static final double climbCameraAngle = 0.0;
     public static final Transform3d robotToCamera =
         new Transform3d(
             new Translation3d(

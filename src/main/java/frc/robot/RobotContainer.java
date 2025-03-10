@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.UnfoldCommand;
 import frc.robot.commands.ElevatorHomingCommand;
 import frc.robot.commands.ExtendLunchCommand;
 import frc.robot.commands.FoldCommand;
@@ -17,6 +16,7 @@ import frc.robot.commands.IntakeCoralCommand;
 import frc.robot.commands.OuttakeAlgaeCommand;
 import frc.robot.commands.OuttakeCoralCommand;
 import frc.robot.commands.TagCenteringCommand;
+import frc.robot.commands.UnfoldCommand;
 import frc.robot.subsystems.BillsLunchSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -137,30 +137,46 @@ public class RobotContainer {
     driverControllerLT.onTrue(new TagCenteringCommand(this, new Translation2d(-0.15, 0.0)));
     driverControllerRT.onTrue(new TagCenteringCommand(this, new Translation2d(0.15, 0.0)));
 
-    copilotControllerA.onTrue(new IntakeCoralCommand(m_tiltRampSubsystem).andThen(new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem)));
+    copilotControllerA.onTrue(
+        new IntakeCoralCommand(m_tiltRampSubsystem)
+            .andThen(new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem)));
     copilotControllerB.onTrue(new OuttakeCoralCommand(m_manipulatorSubsystem));
-    copilotControllerX.onTrue(Commands.run(
-      () -> {
-        m_elevatorSubsystem.incrementElevatorPosition();
-        m_manipulatorSubsystem.incrementManipulatorPosition();
-      },
-      m_elevatorSubsystem,
-      m_manipulatorSubsystem));
-    copilotControllerY.onTrue(Commands.run(
-      () -> {
-        m_elevatorSubsystem.incrementElevatorPosition();
-        m_manipulatorSubsystem.incrementManipulatorPosition();
-      },
-      m_elevatorSubsystem,
-      m_manipulatorSubsystem));
+    copilotControllerX.onTrue(
+        Commands.run(
+            () -> {
+              m_elevatorSubsystem.incrementElevatorPosition();
+              m_manipulatorSubsystem.incrementManipulatorPosition();
+            },
+            m_elevatorSubsystem,
+            m_manipulatorSubsystem));
+    copilotControllerY.onTrue(
+        Commands.run(
+            () -> {
+              m_elevatorSubsystem.incrementElevatorPosition();
+              m_manipulatorSubsystem.incrementManipulatorPosition();
+            },
+            m_elevatorSubsystem,
+            m_manipulatorSubsystem));
 
-    copilotControllerLT.onTrue(new FoldCommand(m_climberSubsystem, m_manipulatorSubsystem, m_tiltRampSubsystem, m_elevatorSubsystem, m_robotDrive, this));
-    copilotControllerRT.onTrue(new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this));
+    copilotControllerLT.onTrue(
+        new FoldCommand(
+            m_climberSubsystem,
+            m_manipulatorSubsystem,
+            m_tiltRampSubsystem,
+            m_elevatorSubsystem,
+            m_robotDrive,
+            this));
+    copilotControllerRT.onTrue(
+        new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this));
   }
 
   public void runStartCommands() {
     ElevatorHomingCommand elevatorHomingCommand = new ElevatorHomingCommand(m_elevatorSubsystem);
 
-    elevatorHomingCommand.andThen(new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this)).schedule();
+    elevatorHomingCommand
+        .andThen(
+            new UnfoldCommand(
+                m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this))
+        .schedule();
   }
 }

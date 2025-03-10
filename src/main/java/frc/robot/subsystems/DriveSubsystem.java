@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.VisionConstants;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -66,6 +67,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   // Boolean used to enable / disable slow mode
   private boolean slowMode = false;
+
+  // Boolean used to enable / disable camera-centric driving
+  private boolean cameraCentric = false;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -144,7 +148,13 @@ public class DriveSubsystem extends SubsystemBase {
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     xSpeedDelivered, ySpeedDelivered, rotDelivered, m_gyro.getRotation2d())
-                : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+                : cameraCentric
+                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                        xSpeedDelivered,
+                        ySpeedDelivered,
+                        rotDelivered,
+                        Rotation2d.fromDegrees(VisionConstants.climbCameraAngle))
+                    : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);
