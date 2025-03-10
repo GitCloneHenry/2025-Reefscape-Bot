@@ -154,19 +154,29 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   /** Enables the robot's slow mode */
-  public Command enableSlowMode() {
-    return Commands.runOnce(
+  public Command enableSlowModeCommand() {
+    return Commands.run(
         () -> {
           slowMode = true;
         });
   }
 
   /** Disables the robot's slow mode */
-  public Command disableSlowMode() {
-    return Commands.runOnce(
+  public Command disableSlowModeCommand() {
+    return Commands.run(
         () -> {
           slowMode = false;
         });
+  }
+
+  /** Enables the robot's slow mode */
+  public void enableSlowMode() {
+    slowMode = true;
+  }
+
+  /** Disables the robot's slow mode */
+  public void disableSlowMode() {
+    slowMode = false;
   }
 
   /** Zeroes the heading of the robot. */

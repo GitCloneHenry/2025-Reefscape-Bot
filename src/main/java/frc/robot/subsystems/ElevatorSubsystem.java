@@ -114,6 +114,10 @@ public class ElevatorSubsystem extends SubsystemBase {
             * EncoderConstants.kMinimumAcceptableElevatorPosition);
   }
 
+  public double getErrorFromTarget() {
+    return m_elevatorDrive.getClosedLoopError().getValueAsDouble();
+  }
+
   @Override
   public void periodic() {
     // System.err.println(m_elevatorDrive.getPosition().getValueAsDouble());

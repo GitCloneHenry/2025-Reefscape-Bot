@@ -71,7 +71,7 @@ public class FloorIntakeSubsystem extends SubsystemBase {
     m_floorIntakeAngleMotor.setNeutralMode(NeutralModeValue.Coast);
   }
 
-  public Command moveToPossition(double value) {
+  public Command moveToPosition(double value) {
     return Commands.runOnce(
         () -> {
           m_floorIntakeAngleMotor.setControl(m_motionMagicVoltage.withPosition(value));

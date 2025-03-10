@@ -22,7 +22,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final DutyCycleEncoder m_climberAngleEncoder =
       new DutyCycleEncoder(DIOConstants.kClimberAngleEncoderID);
 
-  private double m_targetClimberPosition = EncoderConstants.kMaximumAcceptableClimberPosition;
+  private double m_targetClimberPosition = 0.0;
 
   public void applyMotorConfigurations() {
     Slot0Configs angleSlot0 = m_climberAngleConfiguration.Slot0;
@@ -52,6 +52,19 @@ public class ClimberSubsystem extends SubsystemBase {
                 m_targetClimberPosition + value * 1.5,
                 EncoderConstants.kMinimumAcceptableClimberPosition),
             EncoderConstants.kMaximumAcceptableClimberPosition);
+  }
+
+  public void setClimberPosition(double value) {
+    m_targetClimberPosition =
+        Math.min(
+            Math.max(
+              value, EncoderConstants.kMinimumAcceptableClimberPosition
+            ), EncoderConstants.kMaximumAcceptableClimberPosition
+        );
+  }
+
+  public double getErrorFromTarget() {
+    return m_climberAngleMotor.getClosedLoopError().getValueAsDouble();
   }
 
   @Override

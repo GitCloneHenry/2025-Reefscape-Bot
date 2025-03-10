@@ -12,7 +12,17 @@ public class IntakeAlgaeCommand extends Command {
 
   @Override
   public void initialize() {
-    m_tiltRampSubsystem.moveToPossition(-75 * 55 / 90);
-    // m_tiltRampSubsystem.set
+    m_tiltRampSubsystem.moveToPosition(-75 * 55 / 90);
+    m_tiltRampSubsystem.setDrivePower(1500);
+  }
+
+  @Override
+  public boolean isFinished() {
+    return m_tiltRampSubsystem.getMotorStalled();
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    m_tiltRampSubsystem.setDrivePower(1000);
   }
 }

@@ -75,7 +75,7 @@ public class TiltRampSubsystem extends SubsystemBase {
     m_tiltRampAngleMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
-  public Command moveToPossitionCommand(double value) {
+  public Command moveToPositionCommand(double value) {
     return Commands.runOnce(
         () -> {
           m_targetRampPosition =
@@ -86,7 +86,7 @@ public class TiltRampSubsystem extends SubsystemBase {
         this);
   }
 
-  public void moveToPossition(double value) {
+  public void moveToPosition(double value) {
     m_targetRampPosition =
         Math.min(
             Math.max(value, EncoderConstants.kMinimumAcceptableTiltRampPosition),

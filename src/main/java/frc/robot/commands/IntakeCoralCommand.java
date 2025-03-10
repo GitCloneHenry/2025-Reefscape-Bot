@@ -12,7 +12,7 @@ public class IntakeCoralCommand extends Command {
 
   @Override
   public void initialize() {
-    m_tiltRampSubsystem.moveToPossition(-75 * 40 / 90);
+    m_tiltRampSubsystem.moveToPosition(-75 * 40 / 90);
   }
 
   @Override

@@ -193,6 +193,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     return m_manipulatorDriveMotor.getForwardLimit().getValue() == ForwardLimitValue.ClosedToGround;
   }
 
+  public double getErrorFromTarget() {
+    return m_manipulatorAngleMotor.getClosedLoopError().getValueAsDouble();
+  }
+
   @Override
   public void periodic() {
     m_manipulatorAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_desiredPosition));

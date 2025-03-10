@@ -2,17 +2,19 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.DeOrigamiCommand;
+import frc.robot.commands.UnfoldCommand;
 import frc.robot.commands.ElevatorHomingCommand;
 import frc.robot.commands.ExtendLunchCommand;
+import frc.robot.commands.FoldCommand;
+import frc.robot.commands.IntakeAlgaeCommand;
 import frc.robot.commands.IntakeCoralCommand;
+import frc.robot.commands.OuttakeAlgaeCommand;
 import frc.robot.commands.OuttakeCoralCommand;
 import frc.robot.commands.TagCenteringCommand;
 import frc.robot.subsystems.BillsLunchSubsystem;
@@ -45,41 +47,10 @@ public class RobotContainer {
 
   private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
 
-  private final DeOrigamiCommand m_deOrigamiCommand;
-  private final IntakeCoralCommand m_intakeCoralCommand;
-  private final ExtendLunchCommand m_extendLunchCommand;
-  private final OuttakeCoralCommand m_outtakeCoralCommand;
-  private final TagCenteringCommand m_tagCenteringCommandLeft;
-  private final TagCenteringCommand m_tagCenteringCommandRight;
-  private final Command m_incrementElevatorCommand;
-  private final Command m_decrementElevatorCommand;
-
   public final RunCommand m_defaultDriveCommand;
   public final RunCommand m_defaultClimbCommand;
 
   public RobotContainer() {
-    m_deOrigamiCommand = new DeOrigamiCommand(m_manipulatorSubsystem, m_tiltRampSubsystem);
-    m_intakeCoralCommand = new IntakeCoralCommand(m_tiltRampSubsystem);
-    m_extendLunchCommand = new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem);
-    m_outtakeCoralCommand = new OuttakeCoralCommand(m_manipulatorSubsystem);
-    m_tagCenteringCommandLeft = new TagCenteringCommand(this, new Translation2d(-0.15, 0.0));
-    m_tagCenteringCommandRight = new TagCenteringCommand(this, new Translation2d(0.15, 0.0));
-    m_incrementElevatorCommand =
-        Commands.run(
-            () -> {
-              m_elevatorSubsystem.incrementElevatorPosition();
-              m_manipulatorSubsystem.incrementManipulatorPosition();
-            },
-            m_elevatorSubsystem,
-            m_manipulatorSubsystem);
-    m_decrementElevatorCommand =
-        Commands.run(
-            () -> {
-              m_elevatorSubsystem.incrementElevatorPosition();
-              m_manipulatorSubsystem.incrementManipulatorPosition();
-            },
-            m_elevatorSubsystem,
-            m_manipulatorSubsystem);
     m_defaultDriveCommand =
         new RunCommand(
             () ->
@@ -155,23 +126,41 @@ public class RobotContainer {
     m_robotDrive.setDefaultCommand(m_defaultDriveCommand);
     m_climberSubsystem.setDefaultCommand(m_defaultClimbCommand);
 
+    driverControllerA.onTrue(new IntakeAlgaeCommand(m_tiltRampSubsystem));
+    driverControllerB.onTrue(new OuttakeAlgaeCommand(m_tiltRampSubsystem));
+
     driverControllerU.onTrue(m_robotDrive.zeroHeading());
 
-    driverControllerLB.onTrue(m_robotDrive.enableSlowMode());
-    driverControllerLB.onFalse(m_robotDrive.disableSlowMode());
+    driverControllerLB.onTrue(m_robotDrive.enableSlowModeCommand());
+    driverControllerLB.onFalse(m_robotDrive.disableSlowModeCommand());
 
-    driverControllerLT.onTrue(m_tagCenteringCommandLeft);
-    driverControllerRT.onTrue(m_tagCenteringCommandRight);
+    driverControllerLT.onTrue(new TagCenteringCommand(this, new Translation2d(-0.15, 0.0)));
+    driverControllerRT.onTrue(new TagCenteringCommand(this, new Translation2d(0.15, 0.0)));
 
-    copilotControllerA.onTrue(m_intakeCoralCommand.andThen(m_extendLunchCommand));
-    copilotControllerB.onTrue(m_outtakeCoralCommand);
-    copilotControllerX.onTrue(m_incrementElevatorCommand);
-    copilotControllerY.onTrue(m_decrementElevatorCommand);
+    copilotControllerA.onTrue(new IntakeCoralCommand(m_tiltRampSubsystem).andThen(new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem)));
+    copilotControllerB.onTrue(new OuttakeCoralCommand(m_manipulatorSubsystem));
+    copilotControllerX.onTrue(Commands.run(
+      () -> {
+        m_elevatorSubsystem.incrementElevatorPosition();
+        m_manipulatorSubsystem.incrementManipulatorPosition();
+      },
+      m_elevatorSubsystem,
+      m_manipulatorSubsystem));
+    copilotControllerY.onTrue(Commands.run(
+      () -> {
+        m_elevatorSubsystem.incrementElevatorPosition();
+        m_manipulatorSubsystem.incrementManipulatorPosition();
+      },
+      m_elevatorSubsystem,
+      m_manipulatorSubsystem));
+
+    copilotControllerLT.onTrue(new FoldCommand(m_climberSubsystem, m_manipulatorSubsystem, m_tiltRampSubsystem, m_elevatorSubsystem, m_robotDrive, this));
+    copilotControllerRT.onTrue(new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this));
   }
 
   public void runStartCommands() {
     ElevatorHomingCommand elevatorHomingCommand = new ElevatorHomingCommand(m_elevatorSubsystem);
 
-    elevatorHomingCommand.andThen(m_deOrigamiCommand).schedule();
+    elevatorHomingCommand.andThen(new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this)).schedule();
   }
 }
