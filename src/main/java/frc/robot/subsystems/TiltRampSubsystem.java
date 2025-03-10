@@ -109,6 +109,14 @@ public class TiltRampSubsystem extends SubsystemBase {
     return m_tiltRampAngleMotor.getPosition().getValueAsDouble();
   }
 
+  public double getErrorFromTarget() {
+    return m_tiltRampAngleMotor.getClosedLoopError().getValueAsDouble();
+  }
+
+  public boolean getMotorStalled() {
+    return m_tiltRampDriveMotor.getOutputCurrent() > 9.5;
+  }
+
   @Override
   public void periodic() {
     m_tiltRampAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetRampPosition));

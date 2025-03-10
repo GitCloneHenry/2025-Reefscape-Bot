@@ -48,6 +48,7 @@ public final class Constants {
     public static final double kMaximumAcceptableElevatorPosition = 0.0;
     public static final double kMinimumElevatorHeight = 97.2;
     public static final double kMaxumumElevatorHeight = 199.0;
+    public static final double kMaximumAcceptableClosedLoopError = 0.5;
     // L4 Height: 191.8 cm
     // L3 Height: 108.8 cm
     // L1 Height: 112.8 cm

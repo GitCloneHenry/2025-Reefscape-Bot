@@ -22,12 +22,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final DutyCycleEncoder m_climberAngleEncoder =
       new DutyCycleEncoder(DIOConstants.kClimberAngleEncoderID);
 
-  public double m_targetClimberPosition = EncoderConstants.kMaximumAcceptableClimberPosition;
-
-  public ClimberSubsystem() {
-    // waitMillis(2000);
-    // applyMotorConfigurations();
-  }
+  private double m_targetClimberPosition = EncoderConstants.kMaximumAcceptableClimberPosition;
 
   public void applyMotorConfigurations() {
     Slot0Configs angleSlot0 = m_climberAngleConfiguration.Slot0;
