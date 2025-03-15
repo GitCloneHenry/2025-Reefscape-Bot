@@ -148,13 +148,13 @@ public class DriveSubsystem extends SubsystemBase {
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     xSpeedDelivered, ySpeedDelivered, rotDelivered, m_gyro.getRotation2d())
-                : cameraCentric
+                : /*cameraCentric
                     ? ChassisSpeeds.fromFieldRelativeSpeeds(
                         xSpeedDelivered,
                         ySpeedDelivered,
                         rotDelivered,
                         Rotation2d.fromDegrees(VisionConstants.climbCameraAngle))
-                    : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+                    :*/ new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);
@@ -165,7 +165,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Enables the robot's slow mode */
   public Command enableSlowModeCommand() {
-    return Commands.run(
+    return Commands.runOnce(
         () -> {
           slowMode = true;
         });
@@ -173,7 +173,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Disables the robot's slow mode */
   public Command disableSlowModeCommand() {
-    return Commands.run(
+    return Commands.runOnce(
         () -> {
           slowMode = false;
         });

@@ -2,6 +2,8 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -9,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ElevatorHomingCommand;
+import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.ExtendLunchCommand;
 import frc.robot.commands.FoldCommand;
 import frc.robot.commands.IntakeAlgaeCommand;
@@ -32,9 +35,9 @@ public class RobotContainer {
   // The camera used for april tag detection
   public final PhotonCamera m_aprilTagCamera = new PhotonCamera("USB_ATag_Camera");
 
-  private final CommandXboxController m_driverController =
+  public final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  private final CommandXboxController m_copilotController =
+  public final CommandXboxController m_copilotController =
       new CommandXboxController(OperatorConstants.kCopilotControllerPort);
 
   private final ManipulatorSubsystem m_manipulatorSubsystem = new ManipulatorSubsystem();
@@ -49,6 +52,7 @@ public class RobotContainer {
 
   public final RunCommand m_defaultDriveCommand;
   public final RunCommand m_defaultClimbCommand;
+  public final RunCommand m_defaultManipulatorCommand;
 
   public RobotContainer() {
     m_defaultDriveCommand =
@@ -56,17 +60,21 @@ public class RobotContainer {
             () ->
                 m_robotDrive.drive(
                     -MathUtil.applyDeadband(
-                        m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+                        m_driverController.getLeftY() * 0.7, OIConstants.kDriveDeadband),
                     -MathUtil.applyDeadband(
-                        m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+                        m_driverController.getLeftX() * 0.7, OIConstants.kDriveDeadband),
                     -MathUtil.applyDeadband(
-                        m_driverController.getRightX(), OIConstants.kDriveDeadband),
+                        m_driverController.getRightX() * 0.7, OIConstants.kDriveDeadband),
                     true),
             m_robotDrive);
     m_defaultClimbCommand =
         new RunCommand(
             () -> m_climberSubsystem.incrementClimberPosition(m_copilotController.getRightY()),
-            m_elevatorSubsystem);
+            m_climberSubsystem);
+    m_defaultManipulatorCommand =
+        new RunCommand(
+            () -> m_manipulatorSubsystem.applyElevatorOffset(-m_copilotController.getLeftY() * 0.5),
+            m_manipulatorSubsystem);
 
     applyMotorConfigurations();
     configureBindings();
@@ -123,34 +131,34 @@ public class RobotContainer {
     Trigger copilotControllerLC = m_copilotController.leftStick(); // Copilot's Left Stick (Click)
     Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
 
-    m_robotDrive.setDefaultCommand(m_defaultDriveCommand);
-    m_climberSubsystem.setDefaultCommand(m_defaultClimbCommand);
-
     driverControllerA.onTrue(new IntakeAlgaeCommand(m_tiltRampSubsystem));
     driverControllerB.onTrue(new OuttakeAlgaeCommand(m_tiltRampSubsystem));
 
-    driverControllerU.onTrue(m_robotDrive.zeroHeading());
+    driverControllerLT.onTrue(m_robotDrive.enableSlowModeCommand());
+    driverControllerLT.onFalse(m_robotDrive.disableSlowModeCommand());
 
-    driverControllerLB.onTrue(m_robotDrive.enableSlowModeCommand());
-    driverControllerLB.onFalse(m_robotDrive.disableSlowModeCommand());
+    driverControllerLB.onTrue(m_robotDrive.zeroHeading());
 
-    driverControllerLT.onTrue(new TagCenteringCommand(this, new Translation2d(-0.15, 0.0)));
-    driverControllerRT.onTrue(new TagCenteringCommand(this, new Translation2d(0.15, 0.0)));
+    driverControllerL.onTrue(new TagCenteringCommand(this, new Translation2d(-0.15, 0.0)));
+    driverControllerR.onTrue(new TagCenteringCommand(this, new Translation2d(0.15, 0.0)));
 
-    copilotControllerA.onTrue(
-        new IntakeCoralCommand(m_tiltRampSubsystem)
-            .andThen(new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem)));
+    copilotControllerA.whileTrue(m_tiltRampSubsystem.moveToPositionCommand(-75 * 35 / 90));
+    copilotControllerA.onFalse(
+        new IntakeCoralCommand(m_tiltRampSubsystem, m_manipulatorSubsystem)
+            .andThen(new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem, m_elevatorSubsystem))
+                .andThen(new ExtendElevatorCommand(m_elevatorSubsystem, m_manipulatorSubsystem))
+                    .andThen(m_manipulatorSubsystem.extendCoralManipulator()));
     copilotControllerB.onTrue(new OuttakeCoralCommand(m_manipulatorSubsystem));
     copilotControllerX.onTrue(
-        Commands.run(
+        Commands.runOnce(
             () -> {
-              m_elevatorSubsystem.incrementElevatorPosition();
-              m_manipulatorSubsystem.incrementManipulatorPosition();
+              m_elevatorSubsystem.decrementElevatorPosition();
+              m_manipulatorSubsystem.decrementManipulatorPosition();
             },
             m_elevatorSubsystem,
             m_manipulatorSubsystem));
     copilotControllerY.onTrue(
-        Commands.run(
+        Commands.runOnce(
             () -> {
               m_elevatorSubsystem.incrementElevatorPosition();
               m_manipulatorSubsystem.incrementManipulatorPosition();
@@ -168,6 +176,29 @@ public class RobotContainer {
             this));
     copilotControllerRT.onTrue(
         new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, m_climberSubsystem, this));
+    
+    copilotControllerU.onTrue(
+      Commands.run(
+        () -> {
+          Command currentManipulatorCommand = m_manipulatorSubsystem.getCurrentCommand();
+
+          if (currentManipulatorCommand != null) {
+            currentManipulatorCommand.cancel();
+          }
+
+          m_manipulatorSubsystem.setDefaultCommand(m_defaultManipulatorCommand);
+        },
+        m_manipulatorSubsystem
+      )
+    );
+
+    copilotControllerLC.onTrue(Commands.run(
+      () -> m_manipulatorSubsystem.setSpeed(0.5), m_manipulatorSubsystem));
+    copilotControllerRC.onTrue(Commands.run(
+        () -> m_manipulatorSubsystem.extendCoralManipulatorToPercentage(1.0), m_manipulatorSubsystem));
+
+    m_robotDrive.setDefaultCommand(m_defaultDriveCommand);
+    m_climberSubsystem.setDefaultCommand(m_defaultClimbCommand);
   }
 
   public void runStartCommands() {

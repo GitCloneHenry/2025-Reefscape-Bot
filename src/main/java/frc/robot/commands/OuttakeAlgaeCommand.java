@@ -13,7 +13,7 @@ public class OuttakeAlgaeCommand extends Command {
   @Override
   public void initialize() {
     m_tiltRampSubsystem.moveToPosition(-75 * 20 / 90);
-    m_tiltRampSubsystem.setDrivePower(-1500);
+    m_tiltRampSubsystem.setDrivePower(1500);
   }
 
   @Override

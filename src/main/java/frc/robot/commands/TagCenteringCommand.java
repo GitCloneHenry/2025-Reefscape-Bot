@@ -34,7 +34,7 @@ public class TagCenteringCommand extends Command {
   // private final RobotContainer robotContainer;
   private final DriveSubsystem driveSubsystem;
   private final PhotonCamera aprilTagCamera;
-  private final RunCommand defaultDriveCommand;
+  // private final RunCommand defaultDriveCommand;
 
   private Field2d field;
   private FollowPathCommand followPathCommand;
@@ -46,7 +46,7 @@ public class TagCenteringCommand extends Command {
     // this.robotContainer = robotContainer;
     this.driveSubsystem = robotContainer.m_robotDrive;
     this.aprilTagCamera = robotContainer.m_aprilTagCamera;
-    this.defaultDriveCommand = robotContainer.m_defaultDriveCommand;
+    // this.defaultDriveCommand = robotContainer.m_defaultDriveCommand;
 
     this.translation = translation;
 
@@ -163,7 +163,7 @@ public class TagCenteringCommand extends Command {
     ModuleConfig moduleConfig =
         new ModuleConfig(
             ModuleConstants.kWheelDiameterMeters / 2,
-            DriveConstants.kMaxSpeedMetersPerSecond,
+            DriveConstants.kMaxSpeedMetersPerSecond * 0.1,
             wheelCOF,
             DCMotor.getNEO(1),
             60.0,
@@ -208,6 +208,6 @@ public class TagCenteringCommand extends Command {
       followPathCommand.cancel();
     }
 
-    driveSubsystem.setDefaultCommand(defaultDriveCommand);
+    // driveSubsystem.setDefaultCommand(defaultDriveCommand);
   }
 }

@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.Constants.EncoderConstants;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -33,8 +34,8 @@ public class FoldCommand extends Command {
 
   @Override
   public void initialize() {
-    m_climberSubsystem.setClimberPosition(0);
-    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.4);
+    m_climberSubsystem.setClimberPosition(10.0);
+    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.1);
     m_tiltRampSubsystem.moveToPosition(-75 * 20 / 90);
     m_elevatorSubsystem.moveElevatorToPosition(0.0);
     m_driveSubsystem.enableSlowMode();
@@ -53,6 +54,6 @@ public class FoldCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     m_driveSubsystem.disableSlowMode();
-    m_climberSubsystem.setDefaultCommand(m_robotContainer.m_defaultClimbCommand);
+    // m_climberSubsystem.setDefaultCommand(m_robotContainer.m_defaultClimbCommand);
   }
 }

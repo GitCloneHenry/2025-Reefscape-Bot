@@ -41,9 +41,9 @@ public class ManipulatorSubsystem extends SubsystemBase {
   private final DutyCycleEncoder m_manipulatorAngleEncoder =
       new DutyCycleEncoder(DIOConstants.kManipulatorAngleEncoderID);
 
-  private double m_desiredPosition = 0.0;
+  private double m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * 0.5;
 
-  private final double[] m_manipulatorIncrements = {1, 1, 1};
+  private final double[] m_manipulatorIncrements = {1.0 - 2.5 / 6.0, 1.0 + 2.4 / 6.0, 1.0 + 1.3 / 6.0, 1.0 + 4.0 / 6.0};
 
   private int m_positionPointer = 0;
 
@@ -176,7 +176,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   public void incrementManipulatorPosition() {
-    m_positionPointer = Math.min(m_positionPointer + 1, 2);
+    m_positionPointer = Math.min(m_positionPointer + 1, 3);
     m_desiredPosition =
         EncoderConstants.kDesiredManipulatorPositionExtended
             * m_manipulatorIncrements[m_positionPointer];
@@ -194,11 +194,16 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   public double getErrorFromTarget() {
-    return m_manipulatorAngleMotor.getClosedLoopError().getValueAsDouble();
+    return Math.abs(m_manipulatorAngleMotor.getClosedLoopError().getValueAsDouble());
   }
+
+  public void applyElevatorOffset(double offset) {
+    m_desiredPosition = Math.min(Math.max(m_desiredPosition + offset, 0.0), EncoderConstants.kDesiredManipulatorPositionExtended * (1.0 + 4.0 / 6.0));
+  } 
 
   @Override
   public void periodic() {
     m_manipulatorAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_desiredPosition));
+    // System.err.println(m_manipulatorAngleMotor.getPosition().getValueAsDouble());
   }
 }

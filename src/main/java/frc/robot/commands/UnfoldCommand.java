@@ -41,6 +41,6 @@ public class UnfoldCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    m_climberSubsystem.setDefaultCommand(m_robotContainer.m_defaultClimbCommand);
+    // m_climberSubsystem.setDefaultCommand(m_robotContainer.m_defaultClimbCommand);
   }
 }

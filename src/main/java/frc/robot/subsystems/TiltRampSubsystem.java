@@ -59,7 +59,7 @@ public class TiltRampSubsystem extends SubsystemBase {
 
     angleSlot0.kS = 0.0;
     angleSlot0.kV = 0.0;
-    angleSlot0.kP = 0.45;
+    angleSlot0.kP = 1.10;
     angleSlot0.kI = 0.0;
     angleSlot0.kD = 0.0;
 
@@ -110,7 +110,7 @@ public class TiltRampSubsystem extends SubsystemBase {
   }
 
   public double getErrorFromTarget() {
-    return m_tiltRampAngleMotor.getClosedLoopError().getValueAsDouble();
+    return Math.abs(m_tiltRampAngleMotor.getClosedLoopError().getValueAsDouble());
   }
 
   public boolean getMotorStalled() {

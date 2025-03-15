@@ -25,7 +25,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final MotionMagicVoltage m_motionMagicVoltage = new MotionMagicVoltage(0);
 
-  private final double[] m_elevatorIncrements = {112.8, 108.8, 190.8};
+  private final double[] m_elevatorIncrements = {112.8, 108.8, 190.8, 200};
 
   private int m_positionPointer = 0;
 
@@ -99,7 +99,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public void incrementElevatorPosition() {
-    m_positionPointer = Math.min(m_positionPointer + 1, 2);
+    m_positionPointer = Math.min(m_positionPointer + 1, 3);
     moveElevatorToPosition(
         (m_elevatorIncrements[m_positionPointer] - EncoderConstants.kMinimumElevatorHeight)
             / (EncoderConstants.kMaxumumElevatorHeight - EncoderConstants.kMinimumElevatorHeight)
@@ -115,7 +115,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public double getErrorFromTarget() {
-    return m_elevatorDrive.getClosedLoopError().getValueAsDouble();
+    return Math.abs(m_elevatorDrive.getClosedLoopError().getValueAsDouble());
   }
 
   @Override
