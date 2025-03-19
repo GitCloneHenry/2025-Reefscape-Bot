@@ -26,8 +26,8 @@ public class UnfoldCommand extends Command {
 
   @Override
   public void initialize() {
-    m_tiltRampSubsystem.moveToPosition(-75 / 2);
-    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(1.10);
+    m_tiltRampSubsystem.moveToPosition(-75);
+    // m_manipulatorSubsystem.extendCoralManipulatorToPercentage(1.10);
     m_climberSubsystem.setClimberPosition(EncoderConstants.kMaximumAcceptableClimberPosition);
     m_climberSubsystem.removeDefaultCommand();
   }
@@ -36,7 +36,7 @@ public class UnfoldCommand extends Command {
   public boolean isFinished() {
     return m_tiltRampSubsystem.getErrorFromTarget() < 0.5
         && m_manipulatorSubsystem.getErrorFromTarget() < 0.5
-        && m_climberSubsystem.getErrorFromTarget() < 0.5;
+        /*&& m_climberSubsystem.getErrorFromTarget() < 0.5*/;
   }
 
   @Override

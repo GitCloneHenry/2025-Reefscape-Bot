@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.EncoderConstants;
+import frc.robot.subsystems.BillsLunchSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -16,6 +17,7 @@ public class FoldCommand extends Command {
   private final ElevatorSubsystem m_elevatorSubsystem;
   private final DriveSubsystem m_driveSubsystem;
   private final RobotContainer m_robotContainer;
+  private final BillsLunchSubsystem m_billsLunchSubsystem;
 
   public FoldCommand(
       ClimberSubsystem climberSubsystem,
@@ -23,24 +25,29 @@ public class FoldCommand extends Command {
       TiltRampSubsystem tiltRampSubsystem,
       ElevatorSubsystem elevatorSubsystem,
       DriveSubsystem driveSubsystem,
-      RobotContainer robotContainer) {
+      RobotContainer robotContainer,
+      BillsLunchSubsystem billsLunchSubsystem) {
     m_climberSubsystem = climberSubsystem;
     m_manipulatorSubsystem = manipulatorSubsystem;
     m_tiltRampSubsystem = tiltRampSubsystem;
     m_elevatorSubsystem = elevatorSubsystem;
     m_driveSubsystem = driveSubsystem;
     m_robotContainer = robotContainer;
+    m_billsLunchSubsystem = billsLunchSubsystem;
   }
 
   @Override
   public void initialize() {
-    m_climberSubsystem.setClimberPosition(10.0);
+    m_climberSubsystem.setClimberPosition(20.0);
     m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.1);
-    m_tiltRampSubsystem.moveToPosition(-75 * 20 / 90);
+    m_tiltRampSubsystem.moveToPosition(-75 * 10 / 90);
     m_elevatorSubsystem.moveElevatorToPosition(0.0);
     m_driveSubsystem.enableSlowMode();
+    m_billsLunchSubsystem.setPosition(0);
 
     m_climberSubsystem.removeDefaultCommand();
+
+    m_elevatorSubsystem.resetIncrements();
   }
 
   @Override

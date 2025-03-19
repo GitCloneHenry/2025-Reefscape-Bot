@@ -18,7 +18,7 @@ public class IntakeCoralCommand extends Command {
   @Override
   public void initialize() {
     m_manipulatorSubsystem.setSpeed(0.5);
-    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.00);
+    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.0);
     m_tiltRampSubsystem.moveToPosition(-75 * 30 / 90);
 
     m_startTime = System.currentTimeMillis();

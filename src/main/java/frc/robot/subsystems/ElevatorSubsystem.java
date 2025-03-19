@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.Orchestra;
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -25,7 +27,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final MotionMagicVoltage m_motionMagicVoltage = new MotionMagicVoltage(0);
 
-  private final double[] m_elevatorIncrements = {112.8, 108.8, 190.8, 200};
+  private final double[] m_elevatorIncrements = {0.0, 100.0, 115.0, 190.0, 200.0};
 
   private int m_positionPointer = 0;
 
@@ -33,10 +35,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     applyMotorConfigurations();
   }
 
+  public TalonFX getDriveMotor() {
+    return m_elevatorDrive;
+  }
+
   public void applyMotorConfigurations() {
     Slot0Configs elevatorSlot0 = m_elevatorDriveConfiguration.Slot0;
 
     MotionMagicConfigs elevatorMotionMagic = m_elevatorDriveConfiguration.MotionMagic;
+    AudioConfigs audioConfigs = m_elevatorDriveConfiguration.Audio;
+
+    audioConfigs.AllowMusicDurDisable = true;
 
     elevatorSlot0.kS = 0.00;
     elevatorSlot0.kV = 0.00;
@@ -72,11 +81,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command moveElevatorToPositionCommand(double position) {
-    return Commands.run(() -> moveElevatorToPosition(position), this);
+    return Commands.runOnce(() -> moveElevatorToPosition(position), this);
   }
 
   public Command moveElevatorToHeightCommand(double height) {
-    return Commands.run(
+    return Commands.runOnce(
         () ->
             moveElevatorToPosition(
                 (height - EncoderConstants.kMinimumElevatorHeight)
@@ -99,7 +108,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public void incrementElevatorPosition() {
-    m_positionPointer = Math.min(m_positionPointer + 1, 3);
+    m_positionPointer = Math.min(m_positionPointer + 1, 4);
     moveElevatorToPosition(
         (m_elevatorIncrements[m_positionPointer] - EncoderConstants.kMinimumElevatorHeight)
             / (EncoderConstants.kMaxumumElevatorHeight - EncoderConstants.kMinimumElevatorHeight)
@@ -114,8 +123,19 @@ public class ElevatorSubsystem extends SubsystemBase {
             * EncoderConstants.kMinimumAcceptableElevatorPosition);
   }
 
+  public void incrementElevatorToLevel(int positionPointer) {
+    moveElevatorToPosition(
+      (m_elevatorIncrements[Math.max(Math.min(positionPointer, 3), 0)] - EncoderConstants.kMinimumElevatorHeight)
+          / (EncoderConstants.kMaxumumElevatorHeight - EncoderConstants.kMinimumElevatorHeight)
+          * EncoderConstants.kMinimumAcceptableElevatorPosition);
+  }
+
   public double getErrorFromTarget() {
     return Math.abs(m_elevatorDrive.getClosedLoopError().getValueAsDouble());
+  }
+
+  public void resetIncrements() {
+    m_positionPointer = -1;
   }
 
   @Override

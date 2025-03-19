@@ -5,6 +5,10 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -16,11 +20,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.VisionConstants;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -52,12 +57,14 @@ public class DriveSubsystem extends SubsystemBase {
 
   // The gyro sensor
   private final Pigeon2 m_gyro = new Pigeon2(0);
+  // private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry =
       new SwerveDriveOdometry(
           DriveConstants.kDriveKinematics,
           m_gyro.getRotation2d(),
+          // Rotation2d.fromDegrees(m_gyro.getAngle()),
           new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -69,12 +76,40 @@ public class DriveSubsystem extends SubsystemBase {
   private boolean slowMode = false;
 
   // Boolean used to enable / disable camera-centric driving
-  private boolean cameraCentric = false;
+  // private boolean cameraCentric = false;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
+
+    RobotConfig robotConfig;
+    
+    try {
+      robotConfig = RobotConfig.fromGUISettings();
+
+      AutoBuilder.configure(
+        this::getPose,
+        this::resetPose,
+        this::getRobotRelativeSpeeds,
+        driveRobotRelative,
+        new PPHolonomicDriveController(
+          new PIDConstants(3.7, 1.6, 0.6), 
+          new PIDConstants(3.7, 1.6, 0.6)
+        ),
+        robotConfig,
+        () -> {
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        this
+      );
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -82,6 +117,7 @@ public class DriveSubsystem extends SubsystemBase {
     // Update the odometry in the periodic block
     m_odometry.update(
         m_gyro.getRotation2d(),
+        // Rotation2d.fromDegrees(m_gyro.getAngle()),
         new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -99,8 +135,8 @@ public class DriveSubsystem extends SubsystemBase {
     return m_odometry.getPoseMeters();
   }
 
-  public void resetPose() {
-    m_odometry.resetPose(new Pose2d(0.0, 0.0, Rotation2d.fromRadians(0)));
+  public void resetPose(Pose2d newPose) {
+    m_odometry.resetPose(newPose);
   }
 
   /**
@@ -111,6 +147,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void resetOdometry(Pose2d pose) {
     m_odometry.resetPosition(
         m_gyro.getRotation2d(),
+        // Rotation2d.fromDegrees(m_gyro.getAngle()),
         new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -147,7 +184,7 @@ public class DriveSubsystem extends SubsystemBase {
         DriveConstants.kDriveKinematics.toSwerveModuleStates(
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xSpeedDelivered, ySpeedDelivered, rotDelivered, m_gyro.getRotation2d())
+                    xSpeedDelivered, ySpeedDelivered, rotDelivered, m_gyro.getRotation2d()/*Rotation2d.fromDegrees(m_gyro.getAngle())*/)
                 : /*cameraCentric
                     ? ChassisSpeeds.fromFieldRelativeSpeeds(
                         xSpeedDelivered,

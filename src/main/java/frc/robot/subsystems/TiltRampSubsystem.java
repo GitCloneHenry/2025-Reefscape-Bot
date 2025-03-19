@@ -71,7 +71,7 @@ public class TiltRampSubsystem extends SubsystemBase {
     m_tiltRampDriveMotor.configure(
         Neo550.neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    m_tiltRampAngleMotor.setPosition((m_tiltRampAngleEncoder.get() - 0.6) * 300.0);
+    m_tiltRampAngleMotor.setPosition((m_tiltRampAngleEncoder.get() - 0.586) * 300.0);
     m_tiltRampAngleMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
@@ -94,7 +94,7 @@ public class TiltRampSubsystem extends SubsystemBase {
   }
 
   public Command setDrivePowerCommand(double value) {
-    return Commands.run(
+    return Commands.runOnce(
         () -> {
           m_tiltRampDriveController.setReference(value, ControlType.kMAXMotionVelocityControl);
         },
@@ -120,7 +120,8 @@ public class TiltRampSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     m_tiltRampAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetRampPosition));
-    // System.err.println(m_tiltRampAngleMotor.getPosition().getValueAsDouble());
+    // System.err.println(m_tiltRampAngleEncoder.get());
+    // System.err.println((m_tiltRampAngleEncoder.get() - 0.586) * 300.0 +3 ", " + m_tiltRampAngleMotor.getPosition().getValueAsDouble());
   }
   ;
 }

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -22,12 +23,16 @@ public class ClimberSubsystem extends SubsystemBase {
   private final DutyCycleEncoder m_climberAngleEncoder =
       new DutyCycleEncoder(DIOConstants.kClimberAngleEncoderID);
 
-  private double m_targetClimberPosition = EncoderConstants.kMaximumAcceptableClimberPosition * 0.5;
+  private double m_targetClimberPosition = 10.0;
 
   public void applyMotorConfigurations() {
     Slot0Configs angleSlot0 = m_climberAngleConfiguration.Slot0;
 
     MotionMagicConfigs angleMotionMagic = m_climberAngleConfiguration.MotionMagic;
+
+    AudioConfigs audioConfigs = m_climberAngleConfiguration.Audio;
+
+    audioConfigs.AllowMusicDurDisable = true;
 
     angleSlot0.kS = 0.0;
     angleSlot0.kV = 0.0;
@@ -41,8 +46,12 @@ public class ClimberSubsystem extends SubsystemBase {
 
     m_climberAngleMotor.getConfigurator().apply(m_climberAngleConfiguration, 0.050);
 
-    m_climberAngleMotor.setPosition((0.271 - m_climberAngleEncoder.get()) * 320);
+    m_climberAngleMotor.setPosition((0.597 - m_climberAngleEncoder.get()) * 100.0 * 48.0 / 15.0);
     m_climberAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+  }
+
+  public TalonFX getMotor() {
+    return m_climberAngleMotor;
   }
 
   public void incrementClimberPosition(double value) {
@@ -67,7 +76,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // System.err.println(m_climberAngleMotor.getPosition().getValueAsDouble());
+    // System.err.println((0.447 - m_climberAngleEncoder.get()) * 100.0 * 48.0 / 15.0 + ", " + m_climberAngleMotor.getPosition().getValueAsDouble());
+
+    // System.err.println(m_climberAngleEncoder.get());
+
     m_climberAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_targetClimberPosition));
   }
 }

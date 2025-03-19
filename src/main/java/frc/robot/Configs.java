@@ -15,7 +15,7 @@ public final class Configs {
           .closedLoop
           .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
           .pid(0.0, 0.0, 0.0)
-          .velocityFF(0.00036)
+          .velocityFF(0.00045)
           .outputRange(-1, 1);
       neoConfig
           .closedLoop

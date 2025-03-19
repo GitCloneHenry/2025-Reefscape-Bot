@@ -66,9 +66,9 @@ public final class Constants {
     public static final double kSlowModeSpeedPercentage = 0.3;
 
     // Chassis configuration
-    public static final double kTrackWidth = Units.inchesToMeters(24.5);
+    public static final double kTrackWidth = 0.622;
     // Distance between centers of right and left wheels on robot
-    public static final double kWheelBase = Units.inchesToMeters(24.5);
+    public static final double kWheelBase = 0.622;
     // Translation for each wheel on the bot
     public static final List<Translation2d> wheelTranslations =
         List.of(
@@ -108,14 +108,14 @@ public final class Constants {
     // The MAXSwerve module can be configured with one of three pinion gears: 12T,
     // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
     // more teeth will result in a robot that drives faster).
-    public static final int kDrivingMotorPinionTeeth = 14;
+    public static final int kDrivingMotorPinionTeeth = 12;
 
     public static final double kFloorIntakeDriveFreeSpeedRps =
         NeoMotorConstants.kFreeSpeedRpm / 60.0;
 
     // Calculations required for driving motor conversion factors and feed forward
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
-    public static final double kWheelDiameterMeters = 0.0762;
+    public static final double kWheelDiameterMeters = 0.0753;
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
     // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
     // teeth on the bevel pinion
@@ -130,30 +130,30 @@ public final class Constants {
     public static final double kDriveDeadband = 0.05;
   }
 
-  public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 10;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 30;
-    public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 10;
-    public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI * 30;
+  // public static final class AutoConstants {
+  //   public static final double kMaxSpeedMetersPerSecond = 10;
+  //   public static final double kMaxAccelerationMetersPerSecondSquared = 30;
+  //   public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 10;
+  //   public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI * 30;
 
-    // public static final double kPXController = 1;
-    // public static final double kPYController = 1;
-    // public static final double kPThetaController = 1;
+  //   // public static final double kPXController = 1;
+  //   // public static final double kPYController = 1;
+  //   // public static final double kPThetaController = 1;
 
-    // Constraint for the motion profiled robot angle controller
-    public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-        new TrapezoidProfile.Constraints(
-            kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
-  }
+  //   // Constraint for the motion profiled robot angle controller
+  //   public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
+  //       new TrapezoidProfile.Constraints(
+  //           kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+  // }
 
   public static final class VisionConstants {
     public static final double climbCameraAngle = 0.0;
     public static final Transform3d robotToCamera =
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-4.0),
-                Units.inchesToMeters(-11.0),
-                Units.inchesToMeters(30.0)),
+                Units.inchesToMeters(-3.75),
+                Units.inchesToMeters(-10.5),
+                Units.inchesToMeters(29.5)),
             new Rotation3d(0.0, 0.0, 0.0));
   }
 }

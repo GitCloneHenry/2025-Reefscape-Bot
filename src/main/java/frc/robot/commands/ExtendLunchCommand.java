@@ -20,7 +20,7 @@ public class ExtendLunchCommand extends Command {
   @Override
   public void initialize() {
     m_manipulatorSubsystem.setSpeed(0.5);
-    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(-0.02);
+    m_manipulatorSubsystem.extendCoralManipulatorToPercentage(-0.05);
     m_billsLunchSubsystem.setPosition(-110);
     // m_elevatorSubsystem.moveElevatorToPosition(-10);
   }

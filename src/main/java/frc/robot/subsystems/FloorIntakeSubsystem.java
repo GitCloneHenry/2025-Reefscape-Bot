@@ -83,7 +83,7 @@ public class FloorIntakeSubsystem extends SubsystemBase {
   }
 
   public Command setDrivePower(double value) {
-    return Commands.run(
+    return Commands.runOnce(
         () -> {
           m_floorIntakeDriveController.setReference(value, ControlType.kMAXMotionVelocityControl);
         },

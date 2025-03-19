@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -43,7 +44,8 @@ public class ManipulatorSubsystem extends SubsystemBase {
 
   private double m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * 0.5;
 
-  private final double[] m_manipulatorIncrements = {1.0 - 2.5 / 6.0, 1.0 + 2.4 / 6.0, 1.0 + 1.3 / 6.0, 1.0 + 4.0 / 6.0};
+  // private final double[] m_manipulatorIncrements = {1.0 - 2.5 / 6.0, 1.0 + 2.4 / 6.0, 1.0 + 1.3 / 6.0, 1.0 + 4.0 / 6.0};
+  private final double[] m_manipulatorIncrements = { 1.0 - 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 4.0 / 6.0 };
 
   private int m_positionPointer = 0;
 
@@ -76,6 +78,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
     // CurrentLimitsConfigs currentLimitsConfigs = m_manipulatorDriveConfiguration.CurrentLimits;
     // HardwareLimitSwitchConfigs hardwareLimitSwitchConfigs =
     // m_manipulatorAngleConfiguration.HardwareLimitSwitch;
+
+    AudioConfigs audioConfigs = m_manipulatorAngleConfiguration.Audio;
+
+    audioConfigs.AllowMusicDurDisable = true;
 
     // Tells the TalonFXS that it's connected to a Minion motor.
     m_manipulatorDriveConfiguration.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
@@ -110,9 +116,13 @@ public class ManipulatorSubsystem extends SubsystemBase {
     m_manipulatorDriveMotor.setNeutralMode(NeutralModeValue.Coast);
 
     // Configure the TalonFX's encoder to the position read by the absolute encoder.
-    m_manipulatorAngleMotor.setPosition((m_manipulatorAngleEncoder.get() - 0.205810546875) * 100);
+    m_manipulatorAngleMotor.setPosition((m_manipulatorAngleEncoder.get() - 0.7) * 100.0);
     // Configure the TalonFX to brake when no output is specified
     m_manipulatorAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+  }
+
+  public TalonFX getMotor() {
+    return m_manipulatorAngleMotor;
   }
 
   /**
@@ -176,7 +186,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
   }
 
   public void incrementManipulatorPosition() {
-    m_positionPointer = Math.min(m_positionPointer + 1, 3);
+    m_positionPointer = Math.min(m_positionPointer + 1, 4);
     m_desiredPosition =
         EncoderConstants.kDesiredManipulatorPositionExtended
             * m_manipulatorIncrements[m_positionPointer];
@@ -204,6 +214,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     m_manipulatorAngleMotor.setControl(m_motionMagicVoltage.withPosition(m_desiredPosition));
-    // System.err.println(m_manipulatorAngleMotor.getPosition().getValueAsDouble());
+    // System.err.println(m_manipulatorAngleEncoder.get());
+    // System.err.println((m_manipulatorAngleEncoder.get() - 0.7) * 100.0 + ", " + m_manipulatorAngleMotor.getPosition().getValueAsDouble());
   }
 }
