@@ -1,19 +1,30 @@
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.SerialPort.Port;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.ElevatorHomingCommand;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.ExtendLunchCommand;
@@ -32,7 +43,17 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.TagCenteringSubsystem;
 import frc.robot.subsystems.TiltRampSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -59,7 +80,9 @@ public class RobotContainer {
 
   public final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
 
-  public final TagCenteringSubsystem m_tagCenteringSubsystem;
+  public final VisionSubsystem m_visionSubsystem = new VisionSubsystem(this);
+
+  public final TagCenteringSubsystem m_tagCenteringSubsystem = new TagCenteringSubsystem(this);
 
   public final RunCommand m_defaultDriveCommand;
   public final RunCommand m_defaultClimbCommand;
@@ -71,6 +94,8 @@ public class RobotContainer {
   private final SendableChooser<Command> m_autoChooser;
 
   private final SerialPort m_lightStrip;
+
+  public final Field2d m_field2d;
 
   public RobotContainer() {
     configureNamedCommands();
@@ -96,7 +121,7 @@ public class RobotContainer {
             () -> m_manipulatorSubsystem.applyElevatorOffset(-m_copilotController.getLeftY() * 0.5),
             m_manipulatorSubsystem);
 
-    m_tagCenteringSubsystem = new TagCenteringSubsystem(this);
+    m_field2d = new Field2d();
 
     m_lightStrip = new SerialPort(115200, Port.kUSB1);
 
@@ -106,6 +131,7 @@ public class RobotContainer {
     m_autoChooser = AutoBuilder.buildAutoChooser();
 
     SmartDashboard.putData("Auto Mode", m_autoChooser);
+    SmartDashboard.putData("Field", m_field2d);
 
     applyMotorConfigurations();
     configureBindings();
@@ -160,6 +186,7 @@ public class RobotContainer {
     Trigger copilotControllerLC = m_copilotController.leftStick(); // Copilot's Left Stick (Click)
     Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
 
+    driverControllerA.onTrue(new ProxyCommand(triangulateFieldPosition()));
     driverControllerX.onTrue(m_intakeAlgaeCommand);
     driverControllerB.onTrue(m_outtakeAlgaeCommand);
 
@@ -168,14 +195,25 @@ public class RobotContainer {
 
     driverControllerLB.onTrue(m_robotDrive.zeroHeading());
 
-    driverControllerL.onTrue(Commands.run(() -> m_tagCenteringSubsystem.runFollowPathCommand(new Translation2d(0.0, -0.40)), m_tagCenteringSubsystem));
-    driverControllerR.onTrue(Commands.run(() -> m_tagCenteringSubsystem.runFollowPathCommand(new Translation2d(0.0, 0.18)), m_tagCenteringSubsystem));
+    driverControllerL.onTrue(
+      new ProxyCommand(() -> new SequentialCommandGroup(
+        Commands.print("Aligning With Left Reef."),
+        m_tagCenteringSubsystem.FollowPathCommand(new Translation2d(0.0, -0.22)),
+        Commands.print("Got: " + m_robotDrive.getPose().getRotation().getDegrees())
+      )));
+    driverControllerR.onTrue(
+      new ProxyCommand(() -> new SequentialCommandGroup(
+        Commands.print("Aligning With Right Reef."),
+        m_tagCenteringSubsystem.FollowPathCommand(new Translation2d(0.0, 0.11)),
+        Commands.print("Got: " + m_robotDrive.getPose().getRotation().getDegrees())
+      )));
 
     copilotControllerA.onTrue(m_tiltRampSubsystem.moveToPositionCommand(-75 * 32.5 / 90));
     copilotControllerRB.onTrue(
-        new IntakeCoralCommand(m_tiltRampSubsystem, m_manipulatorSubsystem)
-            .andThen(new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem, m_elevatorSubsystem))
-                .andThen(new ExtendElevatorCommand(m_elevatorSubsystem, m_manipulatorSubsystem)));
+      new SequentialCommandGroup(
+        new IntakeCoralCommand(m_tiltRampSubsystem, m_manipulatorSubsystem),
+        new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem, m_elevatorSubsystem),
+        new ExtendElevatorCommand(m_elevatorSubsystem, m_manipulatorSubsystem)));
     copilotControllerB.onTrue(new OuttakeCoralCommand(m_manipulatorSubsystem));
     copilotControllerX.onTrue(
         Commands.runOnce(
@@ -249,7 +287,21 @@ public class RobotContainer {
     NamedCommands.registerCommand("extendManipulator", new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.5));
     NamedCommands.registerCommand("retractManipulator", new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.2));
     NamedCommands.registerCommand("ejectCoralCommand", new OuttakeCoralCommand(m_manipulatorSubsystem));
-    // NamedCommands.registerCommand("raiseElevatorToL4", Commands.print("PLEASE WORK"));
+    NamedCommands.registerCommand("centerOnTag", 
+      new ProxyCommand(() -> new SequentialCommandGroup(  
+        m_tagCenteringSubsystem.FollowPathCommand(new Translation2d(0.0, 0.00))
+      ))
+    );
+    NamedCommands.registerCommand("centerOnLeft", 
+      new ProxyCommand(() -> new SequentialCommandGroup(  
+        m_tagCenteringSubsystem.FollowPathCommand(new Translation2d(0.0, -Units.inchesToMeters(14.75 / 2.0) + 0.08))
+      ))
+    );
+    NamedCommands.registerCommand("centerOnRight",
+      new ProxyCommand(  () -> new SequentialCommandGroup(  
+        m_tagCenteringSubsystem.FollowPathCommand(new Translation2d(0.0, Units.inchesToMeters(14.75 / 2.0) - 0.08))
+      ))
+    );
   }
 
   public Command runStartCommands() {
@@ -266,7 +318,56 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return m_autoChooser.getSelected();
+    List<PhotonPipelineResult> results = m_aprilTagCamera.getAllUnreadResults();
+
+    Optional<Pose2d> estimatedResult = m_visionSubsystem.estimateRobotPose(results);
+
+    if (estimatedResult.isPresent()) {
+
+      m_robotDrive.resetPose(estimatedResult.get()); 
+    }
+
+    Pose2d aprilTag21Position = FieldConstants.aprilTagFieldLayout.getTags().get(21 - 1).pose.toPose2d();
+    Pose2d aprilTag14Position = FieldConstants.aprilTagFieldLayout.getTags().get(14 - 1).pose.toPose2d();
+
+    return new SequentialCommandGroup(
+      new ParallelCommandGroup(
+        new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.5),
+        new IncrementElevatorToLevelCommand(m_elevatorSubsystem, m_robotDrive, 3)
+      ),
+      AutoBuilder.pathfindToPose(
+        new Pose2d(
+          aprilTag21Position.getTranslation()
+            .minus(new Translation2d(0.683 + Units.inchesToMeters(6.0), Rotation2d.fromRadians(aprilTag21Position.getRotation().getRadians() + Math.PI)))
+            .minus(new Translation2d(0.0, Units.inchesToMeters(14.75 / 2.0) + 0.08).rotateBy(Rotation2d.fromRadians(aprilTag21Position.getRotation().getRadians() + Math.PI))),
+            Rotation2d.fromRadians(aprilTag21Position.getRotation().getRadians() + Math.PI)
+        ),
+        VisionConstants.pathConstraints
+      ),
+      new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.0),
+      new WaitCommand(0.25),
+      new OuttakeCoralCommand(m_manipulatorSubsystem),
+      AutoBuilder.pathfindToPose(
+        new Pose2d(
+          aprilTag14Position.getTranslation()
+            .minus(new Translation2d(0.683 + Units.inchesToMeters(6.0), Rotation2d.fromRadians(aprilTag14Position.getRotation().getRadians() + Math.PI))),
+            Rotation2d.fromRadians(aprilTag14Position.getRotation().getRadians() + Math.PI)
+        ),
+        VisionConstants.pathConstraints
+      ),
+      new ParallelCommandGroup(
+        new ExtendManipulatorCommand(m_manipulatorSubsystem, 0.1),
+        new IncrementElevatorToLevelCommand(m_elevatorSubsystem, m_robotDrive, 0)
+      )
+    );
+
+    // return m_autoChooser.getSelected();
+  }
+
+  public Command triangulateFieldPosition() {
+    // return Commands.print(estimatedRobotPose.estimatedPose.toString());
+    // m_robotDrive.resetOdometry(pho);
+    return Commands.print("Haha, removed it");
   }
 
   public void sendByteToStrip(byte[] bytes, int count) {

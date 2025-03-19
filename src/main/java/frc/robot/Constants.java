@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -7,7 +8,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Filesystem;
+
+import java.io.IOException;
 import java.util.List;
+
+import com.pathplanner.lib.path.PathConstraints;
 
 public final class Constants {
   public static final class OperatorConstants {
@@ -155,5 +161,25 @@ public final class Constants {
                 Units.inchesToMeters(-10.5),
                 Units.inchesToMeters(29.5)),
             new Rotation3d(0.0, 0.0, 0.0));
+    public static final PathConstraints pathConstraints =
+        new PathConstraints(
+            1.500 * 0.6,
+            3.00 * 0.6,
+            240.0 * Math.PI / 180.0 * 0.6,
+            4 * Math.PI * 0.6);
+  }
+
+  public static final class FieldConstants {
+    public static AprilTagFieldLayout aprilTagFieldLayout;
+
+    static {
+      try {
+          aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(
+              "2025-reefscape.json"
+          );
+      } catch (IOException e) {
+          e.printStackTrace();
+      }
+    }
   }
 }

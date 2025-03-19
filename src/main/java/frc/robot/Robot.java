@@ -1,9 +1,21 @@
 package frc.robot;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.VisionConstants;
 
 public class Robot extends TimedRobot {
   private final RobotContainer m_robotContainer;
@@ -18,9 +30,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    byte[] data = { DriverStation.getAlliance().get() == DriverStation.Alliance.Red ? (byte) 4 : (byte) 5 }; 
-
-    m_robotContainer.sendByteToStrip(data, 1);
+    m_robotContainer.m_field2d.setRobotPose(m_robotContainer.m_robotDrive.getPose());
   }
 
   @Override
@@ -34,6 +44,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    byte[] data = { 6 }; 
+
+    m_robotContainer.sendByteToStrip(data, 1);
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -42,17 +56,29 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    byte[] data = { DriverStation.getAlliance().get() == DriverStation.Alliance.Red ? (byte) 4 : (byte) 5 }; 
+
+    m_robotContainer.sendByteToStrip(data, 1);
+  }
 
   @Override
   public void teleopInit() {
+    byte[] data = { 6 }; 
+
+    m_robotContainer.sendByteToStrip(data, 1);
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    byte[] data = { DriverStation.getAlliance().get() == DriverStation.Alliance.Red ? (byte) 4 : (byte) 5 }; 
+
+    m_robotContainer.sendByteToStrip(data, 1);
+  }
 
   @Override
   public void testInit() {

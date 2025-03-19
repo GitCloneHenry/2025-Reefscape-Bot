@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.7251024590163935,
+        "x": 6.521311475409835,
         "y": 4.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.396214818461382,
-        "y": 4.830268493934909
+        "x": 7.375174246418438,
+        "y": 4.615088648387381
       },
       "isLocked": false,
-      "linkedName": "Back Up End"
+      "linkedName": "Move to Reef End"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 5.265727459016393
       },
       "prevControl": {
-        "x": 6.552103783890779,
-        "y": 4.917688823395545
+        "x": 6.085649829201146,
+        "y": 5.2047340657437475
       },
       "nextControl": null,
       "isLocked": false,
@@ -36,7 +36,30 @@
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "centerOnLeft",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "centerOnLeft"
+        }
+      }
+    },
+    {
+      "name": "raiseElevatorToL1",
+      "waypointRelativePos": 0.2,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "raiseElevatorToL1"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 1.5,
     "maxAcceleration": 3.0,

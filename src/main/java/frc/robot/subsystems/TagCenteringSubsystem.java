@@ -10,19 +10,23 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.RobotContainer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.json.simple.parser.ParseException;
 import org.photonvision.PhotonCamera;
@@ -30,34 +34,31 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class TagCenteringSubsystem extends SubsystemBase {
+  private final RobotContainer robotContainer;
   private final DriveSubsystem driveSubsystem;
   private final PhotonCamera aprilTagCamera;
-
-  private Field2d field;
-  private FollowPathCommand followPathCommand;
+  private final VisionSubsystem visionSubsystem;
 
   public TagCenteringSubsystem(RobotContainer robotContainer) {
+    this.robotContainer = robotContainer;
     this.driveSubsystem = robotContainer.m_robotDrive;
     this.aprilTagCamera = robotContainer.m_aprilTagCamera;
-
-    this.field = new Field2d();
-    SmartDashboard.putData("Field", this.field);
+    this.visionSubsystem = robotContainer.m_visionSubsystem;
   }
 
-  public void runFollowPathCommand(Translation2d translation) {
-    driveSubsystem.getDefaultCommand().cancel();
-    followPathCommand(translation).schedule();
-  }
-
-  public Command followPathCommand(Translation2d translation) {
+  public Command FollowPathCommand(Translation2d translation) {
     List<PhotonPipelineResult> results = this.aprilTagCamera.getAllUnreadResults();
     PhotonTrackedTarget bestTarget = null;
     double minDistance = Double.MAX_VALUE;
 
+    Optional<Pose2d> estimatedResult = visionSubsystem.estimateRobotPose(results);
+
+    if (estimatedResult.isPresent()) {
+      this.driveSubsystem.resetPose(estimatedResult.get()); 
+    }
+
     for (PhotonPipelineResult result : results) {
       for (PhotonTrackedTarget target : result.getTargets()) {
-        // if (target.getPoseAmbiguity() > 0.2) continue;
-
         double distanceToTag = target.getBestCameraToTarget().getTranslation().getNorm();
 
         if (distanceToTag < minDistance) {
@@ -71,66 +72,63 @@ public class TagCenteringSubsystem extends SubsystemBase {
       return Commands.print("Didn't see an April Tag!");
     }
 
+    Pose3d aprilTagPosition = FieldConstants.aprilTagFieldLayout.getTags().get(bestTarget.fiducialId - 1).pose;
+
     Transform3d cameraToTag = bestTarget.getBestCameraToTarget();
     Transform3d robotToTag = VisionConstants.robotToCamera.plus(cameraToTag);
     Translation2d tagOffset = robotToTag.getTranslation().toTranslation2d();
-    Translation2d targetPosition =
-        driveSubsystem
-            .getPose()
-            .getTranslation()
-            .plus(tagOffset.rotateBy(driveSubsystem.getPose().getRotation()));
+    // Translation2d targetPosition =
+    //     driveSubsystem
+    //         .getPose()
+    //         .getTranslation()
+    //         .plus(tagOffset.rotateBy(driveSubsystem.getPose().getRotation()));
 
-    Rotation2d targetRotation =
-        Rotation2d.fromRadians(Math.atan2(tagOffset.getY(), tagOffset.getX()))
-            .plus(driveSubsystem.getPose().getRotation());
+    // Rotation2d targetRotation = Rotation2d.fromRadians(tagOffset.getAngle().getRadians() + Math.PI);
+
+    Translation2d targetPosition = aprilTagPosition.toPose2d().getTranslation();
+    Rotation2d targetRotation = Rotation2d.fromRadians(aprilTagPosition.toPose2d().getRotation().getRadians() + Math.PI);
 
     List<Waypoint> waypoints =
         PathPlannerPath.waypointsFromPoses(
             new Pose2d(
               this.driveSubsystem.getPose().getX(),
               this.driveSubsystem.getPose().getY(),
-              targetRotation
+              this.driveSubsystem.getPose().getRotation()
             ),
             new Pose2d(
                 targetPosition
-                    .minus(new Translation2d(0.683, targetRotation))
+                    .minus(new Translation2d(0.683 + Units.inchesToMeters(6.0), targetRotation))
                     .minus(translation.rotateBy(targetRotation)),
                 targetRotation));
-
-    PathConstraints pathConstraints =
-        new PathConstraints(
-            1.500,
-            3.00,
-            240.0 * Math.PI / 180.0,
-            4 * Math.PI);
+          
+    
 
     IdealStartingState idealStartingState = new IdealStartingState(0.0, this.driveSubsystem.getPose().getRotation());
     GoalEndState goalEndState = new GoalEndState(0.0, targetRotation);
 
-    PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
+    PathPlannerPath path = new PathPlannerPath(waypoints, VisionConstants.pathConstraints, idealStartingState, goalEndState);
 
     PPHolonomicDriveController holonomicDriveController =
         new PPHolonomicDriveController(
             new PIDConstants(3.7, 1.6, 0.6), 
-            new PIDConstants(7.3, 2.8, 0.6)
+            new PIDConstants(14.3, 5.2, 1.2)
+            // new PIDConstants(3.7, 1.6, 0.6)
         );
 
     RobotConfig robotConfig;
     try {
         robotConfig = RobotConfig.fromGUISettings();
 
-        followPathCommand =
-            new FollowPathCommand(
-                path,
-                this.driveSubsystem::getPose,
-                this.driveSubsystem::getRobotRelativeSpeeds,
-                this.driveSubsystem.driveRobotRelative,
-                holonomicDriveController,
-                robotConfig,
-                () -> false,
-                this.driveSubsystem);
-
-        return followPathCommand;
+        return new SequentialCommandGroup(new FollowPathCommand(
+          path,
+          this.driveSubsystem::getPose,
+          this.driveSubsystem::getRobotRelativeSpeeds,
+          this.driveSubsystem.driveRobotRelative,
+          holonomicDriveController,
+          robotConfig,
+          () -> false,
+          this.driveSubsystem),
+          Commands.print("Expected: " + targetRotation.getDegrees()));
     } catch (IOException | ParseException e) {
         e.printStackTrace();
     }

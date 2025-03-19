@@ -5,27 +5,34 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "extendManipulator"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "raiseElevatorToL4"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "extendManipulator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "raiseElevatorToL4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "enableSlowMode"
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Drive to Reef"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
+            "pathName": "Back Up and Grab Algae"
           }
         },
         {
@@ -41,33 +48,9 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Back Up"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "raiseElevatorToL1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Back Up and Grab Algae"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.2
+            "name": "disableSlowMode"
           }
         },
         {
@@ -79,7 +62,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Real Auto",
   "choreoAuto": false
 }
