@@ -27,7 +27,7 @@ public class ExtendLunchCommand extends Command {
 
   @Override
   public void execute() {
-    System.err.println(m_elevatorSubsystem.getErrorFromTarget());
+    // System.err.println(m_elevatorSubsystem.getErrorFromTarget());
   }
 
   @Override

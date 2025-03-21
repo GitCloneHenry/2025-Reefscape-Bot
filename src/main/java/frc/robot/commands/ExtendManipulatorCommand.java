@@ -20,6 +20,6 @@ public class ExtendManipulatorCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return m_manipulatorSubsystem.getErrorFromTarget() < 0.5;
+        return m_manipulatorSubsystem.getErrorFromTarget() < 1.0;
     }
 }

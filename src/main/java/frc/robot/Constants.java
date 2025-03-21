@@ -1,14 +1,13 @@
 package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Filesystem;
 
 import java.io.IOException;
 import java.util.List;
@@ -136,22 +135,6 @@ public final class Constants {
     public static final double kDriveDeadband = 0.05;
   }
 
-  // public static final class AutoConstants {
-  //   public static final double kMaxSpeedMetersPerSecond = 10;
-  //   public static final double kMaxAccelerationMetersPerSecondSquared = 30;
-  //   public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 10;
-  //   public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI * 30;
-
-  //   // public static final double kPXController = 1;
-  //   // public static final double kPYController = 1;
-  //   // public static final double kPThetaController = 1;
-
-  //   // Constraint for the motion profiled robot angle controller
-  //   public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-  //       new TrapezoidProfile.Constraints(
-  //           kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
-  // }
-
   public static final class VisionConstants {
     public static final double climbCameraAngle = 0.0;
     public static final Transform3d robotToCamera =
@@ -173,13 +156,7 @@ public final class Constants {
     public static AprilTagFieldLayout aprilTagFieldLayout;
 
     static {
-      try {
-          aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(
-              "2025-reefscape.json"
-          );
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
+      aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     }
   }
 }

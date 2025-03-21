@@ -6,13 +6,11 @@ import frc.robot.subsystems.ManipulatorSubsystem;
 
 public class ExtendElevatorCommand extends Command {
     private final ElevatorSubsystem m_elevatorSubsystem;
-    private final ManipulatorSubsystem m_manipulatorSubsystem;
 
     public long m_startTime = 0;
 
     public ExtendElevatorCommand(ElevatorSubsystem elevatorSubsystem, ManipulatorSubsystem manipulatorSubsystem) {
         m_elevatorSubsystem = elevatorSubsystem;
-        m_manipulatorSubsystem = manipulatorSubsystem;
     }
 
     @Override

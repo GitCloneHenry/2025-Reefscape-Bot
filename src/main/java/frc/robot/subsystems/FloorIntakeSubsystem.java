@@ -92,10 +92,10 @@ public class FloorIntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    System.err.println(
-        (m_floorIntakeAngleEncoder.get() - 0.304) * 49.5
-            + ", "
-            + m_floorIntakeAngleMotor.getPosition().getValueAsDouble());
+    // System.err.println(
+    //     (m_floorIntakeAngleEncoder.get() - 0.304) * 49.5
+    //         + ", "
+    //         + m_floorIntakeAngleMotor.getPosition().getValueAsDouble());
     // System.err.println(m_floorIntakeAngleEncoder.get());
   }
 }

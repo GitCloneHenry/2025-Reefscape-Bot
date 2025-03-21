@@ -1,26 +1,20 @@
 package frc.robot;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.VisionConstants;
 
 public class Robot extends TimedRobot {
   private final RobotContainer m_robotContainer;
 
-  private Command m_autonomousCommand;
+  // private Command m_autonomousCommand;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -48,7 +42,7 @@ public class Robot extends TimedRobot {
 
     m_robotContainer.sendByteToStrip(data, 1);
 
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    Command m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       m_robotContainer.runStartCommands().andThen(m_autonomousCommand).schedule();
@@ -68,9 +62,9 @@ public class Robot extends TimedRobot {
 
     m_robotContainer.sendByteToStrip(data, 1);
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
+    // if (m_autonomousCommand != null) {
+    //   m_autonomousCommand.cancel();
+    // }
   }
 
   @Override

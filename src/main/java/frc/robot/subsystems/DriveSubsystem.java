@@ -13,7 +13,6 @@ import com.pathplanner.lib.util.DriveFeedforwards;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -21,14 +20,17 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
+
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class DriveSubsystem extends SubsystemBase {
   // Create MAXSwerveModules
@@ -55,6 +57,9 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kRearRightDrivingCanId,
           DriveConstants.kRearRightTurningCanId,
           DriveConstants.kBackRightChassisAngularOffset);
+
+  private final VisionSubsystem m_visionSubsystem = 
+      new VisionSubsystem();
 
   // The gyro sensor
   private final Pigeon2 m_gyro = new Pigeon2(0);
@@ -113,18 +118,53 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
-  @Override
-  public void periodic() {
+  public void updateOdometryBasic() {
     // Update the odometry in the periodic block
     m_odometry.update(
-        m_gyro.getRotation2d(),
-        // Rotation2d.fromDegrees(m_gyro.getAngle()),
-        new SwerveModulePosition[] {
-          m_frontLeft.getPosition(),
-          m_frontRight.getPosition(),
-          m_rearLeft.getPosition(),
-          m_rearRight.getPosition()
-        });
+    m_gyro.getRotation2d(),
+    // Rotation2d.fromDegrees(m_gyro.getAngle()),
+    new SwerveModulePosition[] {
+      m_frontLeft.getPosition(),
+      m_frontRight.getPosition(),
+      m_rearLeft.getPosition(),
+      m_rearRight.getPosition()
+    });
+  }
+
+  @Override
+  public void periodic() {
+    List<PhotonPipelineResult> visionResults = m_visionSubsystem.getVisionResults();
+
+    if (visionResults.size() < 1) {
+      updateOdometryBasic();
+      return;
+    }
+
+    PhotonPipelineResult visionResult = visionResults.get(0);
+
+    double minDistance = Double.MAX_VALUE;
+
+    for (PhotonTrackedTarget target : visionResult.getTargets()) {
+      double distanceToTag = target.getBestCameraToTarget().getTranslation().getNorm();
+
+      if (distanceToTag < minDistance) {
+        minDistance = distanceToTag;
+      }
+    }
+
+    // if (minDistance > 2.5) {
+    //   updateOdometryBasic();
+    //   return; 
+    // }
+
+    Optional<Pose2d> potentialPose = m_visionSubsystem.estimateRobotPose(visionResult);
+
+    if (potentialPose.isEmpty()) {
+      updateOdometryBasic();
+      return;
+    }
+
+    resetPose(potentialPose.get());
   }
 
   /**

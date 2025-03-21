@@ -47,7 +47,7 @@ public class ClimberSubsystem extends SubsystemBase {
     m_climberAngleMotor.getConfigurator().apply(m_climberAngleConfiguration, 0.050);
 
     m_climberAngleMotor.setPosition((0.597 - m_climberAngleEncoder.get()) * 100.0 * 48.0 / 15.0);
-    m_climberAngleMotor.setNeutralMode(NeutralModeValue.Brake);
+    m_climberAngleMotor.setNeutralMode(NeutralModeValue.Coast);
   }
 
   public TalonFX getMotor() {

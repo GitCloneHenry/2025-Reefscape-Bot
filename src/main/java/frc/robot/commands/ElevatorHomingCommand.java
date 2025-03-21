@@ -18,7 +18,7 @@ public class ElevatorHomingCommand extends Command {
 
   @Override
   public void execute() {
-    System.err.println(m_elevatorSubsystem.getEncoderPosition());
+    // System.err.println(m_elevatorSubsystem.getEncoderPosition());
     if (m_elevatorSubsystem.getEncoderPosition() < -10) {
       m_elevatorSubsystem.moveElevator(0.05);
     }

@@ -5,21 +5,27 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Test Path #1"
+            "name": "PrepareL4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Test Path #2"
+            "pathName": "Drive to Reef"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ScoreL4"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Test Auto",
+  "folder": null,
   "choreoAuto": false
 }

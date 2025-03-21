@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -137,6 +136,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void resetIncrements() {
     m_positionPointer = -1;
   }
+  
 
   @Override
   public void periodic() {
