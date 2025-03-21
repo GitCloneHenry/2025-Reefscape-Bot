@@ -3,7 +3,6 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.BillsLunchSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
@@ -39,6 +38,7 @@ public class FoldCommand extends Command {
     m_billsLunchSubsystem.setPosition(0);
 
     m_elevatorSubsystem.resetIncrements();
+    m_manipulatorSubsystem.resetIncrements();
   }
 
   @Override

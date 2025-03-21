@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,7 +27,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final MotionMagicVoltage m_motionMagicVoltage = new MotionMagicVoltage(0);
 
-  private final double[] m_elevatorIncrements = {0.0, 100.0, 115.0, 190.0, 200.0};
+  private final double[] m_elevatorIncrements = {110.0, 100.0, 115.0, 190.0, 200.0};
 
   private int m_positionPointer = 0;
 

@@ -45,7 +45,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
   private double m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * 0.5;
 
   // private final double[] m_manipulatorIncrements = {1.0 - 2.5 / 6.0, 1.0 + 2.4 / 6.0, 1.0 + 1.3 / 6.0, 1.0 + 4.0 / 6.0};
-  private final double[] m_manipulatorIncrements = { 1.0 - 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 4.0 / 6.0 };
+  private final double[] m_manipulatorIncrements = { 1.0 - 2.5 / 6.0, 1.0, 1.0 + 2.5 / 6.0, 1.0 + 2.5 / 6.0, 1.0 + 4.0 / 6.0 };
 
   private int m_positionPointer = 0;
 
@@ -210,6 +210,10 @@ public class ManipulatorSubsystem extends SubsystemBase {
   public void applyElevatorOffset(double offset) {
     m_desiredPosition = Math.min(Math.max(m_desiredPosition + offset, 0.0), EncoderConstants.kDesiredManipulatorPositionExtended * (1.0 + 4.0 / 6.0));
   } 
+
+  public void resetIncrements() {
+    m_positionPointer = -1;
+  }
 
   @Override
   public void periodic() {

@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.pathplanner.lib.path.PathConstraints;

@@ -21,6 +21,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -100,7 +101,7 @@ public class DriveSubsystem extends SubsystemBase {
         this::getRobotRelativeSpeeds,
         driveRobotRelative,
         new PPHolonomicDriveController(
-          new PIDConstants(3.7, 1.6, 0.6), 
+          new PIDConstants(2.25, 0.85, 0.31), 
           new PIDConstants(3.7, 1.6, 0.6)
         ),
         robotConfig,
@@ -133,6 +134,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // updateOdometryBasic();
+
     List<PhotonPipelineResult> visionResults = m_visionSubsystem.getVisionResults();
 
     if (visionResults.size() < 1) {
@@ -152,10 +155,10 @@ public class DriveSubsystem extends SubsystemBase {
       }
     }
 
-    // if (minDistance > 2.5) {
-    //   updateOdometryBasic();
-    //   return; 
-    // }
+    // // if (minDistance > 2.5) {
+    // //   updateOdometryBasic();
+    // //   return; 
+    // // }
 
     Optional<Pose2d> potentialPose = m_visionSubsystem.estimateRobotPose(visionResult);
 
@@ -273,6 +276,20 @@ public class DriveSubsystem extends SubsystemBase {
         () -> {
           m_gyro.reset();
         });
+  }
+
+  /** Intelligent gyro zeroing based on alliance and field positioning */
+  public Command smartZeroHeading() {
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+
+    if (alliance.isPresent()) {
+      return Commands.runOnce(
+        () -> m_gyro.setYaw(getPose().getRotation().getDegrees() + (alliance.get() == DriverStation.Alliance.Blue ? 0.0 : 180.0)),
+        this
+      );
+    }
+
+    return Commands.print("Couldn't get alliance!");
   }
 
   /** Drives the robot relative to the head of the robot */

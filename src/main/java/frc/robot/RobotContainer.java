@@ -54,7 +54,7 @@ public class RobotContainer {
 
   public final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
 
-  public final AutoSubsystem m_autoSubsystem = new AutoSubsystem(this);
+  public final AutoSubsystem m_autoSubsystem = new AutoSubsystem();
 
   public final RunCommand m_defaultDriveCommand;
   public final RunCommand m_defaultManipulatorCommand;
@@ -69,6 +69,8 @@ public class RobotContainer {
   private final SendableChooser<Command> m_autoChooser;
 
   public RobotContainer() {
+    configureNamedCommands();
+
     m_defaultDriveCommand =
         new RunCommand(
             () ->
@@ -122,7 +124,7 @@ public class RobotContainer {
       "ScoreL4", 
       new SequentialCommandGroup(
         new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.1),
-        new WaitCommand(0.2),
+        new WaitCommand(0.5),
         new OuttakeCommand(m_manipulatorSubsystem)
     ));
 
@@ -159,8 +161,8 @@ public class RobotContainer {
 
     // Trigger driverControllerU = m_driverController.povUp(); // Driver's DPAD Up
     // Trigger driverControllerD = m_driverController.povDown(); // Driver's DPAD Down
-    Trigger driverControllerL = m_driverController.povLeft(); // Driver's DPAD Left
-    Trigger driverControllerR = m_driverController.povRight(); // Driver's DPAD Right
+    // Trigger driverControllerL = m_driverController.povLeft(); // Driver's DPAD Left
+    // Trigger driverControllerR = m_driverController.povRight(); // Driver's DPAD Right
 
     Trigger driverControllerLB = m_driverController.leftBumper(); // Driver's Left Bumper
     // Trigger driverControllerRB = m_driverController.rightBumper(); // Driver's Right Bumper
@@ -186,7 +188,7 @@ public class RobotContainer {
     Trigger copilotControllerRT = m_copilotController.rightTrigger(); // Copilot's Right Trigger
 
     Trigger copilotControllerLC = m_copilotController.leftStick(); // Copilot's Left Stick (Click)
-    Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
+    // Trigger copilotControllerRC = m_copilotController.rightStick(); // Copilot's Right Stick (Click)
 
     driverControllerX.onTrue(m_intakeAlgaeCommand);
     driverControllerB.onTrue(m_outtakeAlgaeCommand);
@@ -196,7 +198,7 @@ public class RobotContainer {
 
     driverControllerLB.onTrue(m_robotDrive.zeroHeading());
 
-    copilotControllerA.onTrue(m_tiltRampSubsystem.moveToPositionCommand(-75 * 32.5 / 90));
+    copilotControllerA.onTrue(m_tiltRampSubsystem.moveToPositionCommand(-75 * 30.0 / 90));
     copilotControllerRB.onTrue(
       new SequentialCommandGroup(
         new IntakeCoralCommand(m_tiltRampSubsystem, m_manipulatorSubsystem),
@@ -245,14 +247,14 @@ public class RobotContainer {
         m_manipulatorSubsystem
       ));
 
-    copilotControllerL.onTrue(new SequentialCommandGroup(
-        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(49) * 100.0),
+    copilotControllerR.onTrue(new SequentialCommandGroup(
+        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(51) * 100.0),
         new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.05)
     ));
 
-    copilotControllerR.onTrue(new SequentialCommandGroup(
-        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(40)),
-        new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.0 - (11.5 / 90.00))
+    copilotControllerL.onTrue(new SequentialCommandGroup(
+        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(42)),
+        new ExtendManipulatorCommand(m_manipulatorSubsystem, 0.95)
     ));
 
     copilotControllerLC.onTrue(Commands.runOnce(
@@ -274,7 +276,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return m_autoChooser.getSelected();
+    return m_autoChooser.getSelected().andThen(m_robotDrive.smartZeroHeading());
   }
 
   public void sendByteToStrip(byte[] bytes, int count) {

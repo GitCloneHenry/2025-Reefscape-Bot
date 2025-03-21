@@ -9,6 +9,18 @@
           "data": {
             "pathName": "L4A"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ScoreL4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L4B"
+          }
         }
       ]
     }

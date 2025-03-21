@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.393794254133903,
-        "y": 4.106493401443002
+        "x": 6.305516981121471,
+        "y": 4.0291778439822306
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.0,
-        "y": 4.125
+        "x": 6.04,
+        "y": 4.19
       },
       "prevControl": {
-        "x": 6.305216330582996,
-        "y": 4.114575075032369
+        "x": 6.352977288030402,
+        "y": 4.19529024592002
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,7 +34,7 @@
   "eventMarkers": [
     {
       "name": "Raise Elevator",
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 0.1002166847237295,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -42,24 +42,13 @@
           "name": "PrepareL4"
         }
       }
-    },
-    {
-      "name": "Score Coral",
-      "waypointRelativePos": 1.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "ScoreL4"
-        }
-      }
     }
   ],
   "globalConstraints": {
     "maxVelocity": 1.0,
     "maxAcceleration": 2.0,
-    "maxAngularVelocity": 240.0,
-    "maxAngularAcceleration": 360.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 240.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
