@@ -64,7 +64,6 @@ public class DriveSubsystem extends SubsystemBase {
 
   // The gyro sensor
   private final Pigeon2 m_gyro = new Pigeon2(0);
-  // private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry =
@@ -81,9 +80,6 @@ public class DriveSubsystem extends SubsystemBase {
 
   // Boolean used to enable / disable slow mode
   private boolean slowMode = false;
-
-  // Boolean used to enable / disable camera-centric driving
-  // private boolean cameraCentric = false;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -119,11 +115,14 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
+  public VisionSubsystem getVisionSubsystem() {
+    return m_visionSubsystem;
+  }
+
   public void updateOdometryBasic() {
     // Update the odometry in the periodic block
     m_odometry.update(
     m_gyro.getRotation2d(),
-    // Rotation2d.fromDegrees(m_gyro.getAngle()),
     new SwerveModulePosition[] {
       m_frontLeft.getPosition(),
       m_frontRight.getPosition(),
@@ -134,8 +133,6 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // updateOdometryBasic();
-
     List<PhotonPipelineResult> visionResults = m_visionSubsystem.getVisionResults();
 
     if (visionResults.size() < 1) {
@@ -154,11 +151,6 @@ public class DriveSubsystem extends SubsystemBase {
         minDistance = distanceToTag;
       }
     }
-
-    // // if (minDistance > 2.5) {
-    // //   updateOdometryBasic();
-    // //   return; 
-    // // }
 
     Optional<Pose2d> potentialPose = m_visionSubsystem.estimateRobotPose(visionResult);
 
@@ -191,7 +183,6 @@ public class DriveSubsystem extends SubsystemBase {
   public void resetOdometry(Pose2d pose) {
     m_odometry.resetPosition(
         m_gyro.getRotation2d(),
-        // Rotation2d.fromDegrees(m_gyro.getAngle()),
         new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -229,13 +220,7 @@ public class DriveSubsystem extends SubsystemBase {
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     xSpeedDelivered, ySpeedDelivered, rotDelivered, m_gyro.getRotation2d()/*Rotation2d.fromDegrees(m_gyro.getAngle())*/)
-                : /*cameraCentric
-                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeedDelivered,
-                        ySpeedDelivered,
-                        rotDelivered,
-                        Rotation2d.fromDegrees(VisionConstants.climbCameraAngle))
-                    :*/ new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
+                : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);

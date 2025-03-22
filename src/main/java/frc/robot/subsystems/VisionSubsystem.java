@@ -18,12 +18,24 @@ public class VisionSubsystem extends SubsystemBase {
 
     private final PhotonCamera m_aprilTagCamera = new PhotonCamera("USB_ATag_Camera");
 
+    private List<PhotonPipelineResult> m_lastResults;
+
     public VisionSubsystem() {
         m_photonPoseEstimator = new PhotonPoseEstimator(FieldConstants.aprilTagFieldLayout, PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, VisionConstants.robotToCamera);
     }
 
     public List<PhotonPipelineResult> getVisionResults() {
-        return m_aprilTagCamera.getAllUnreadResults();
+        List<PhotonPipelineResult> results = m_aprilTagCamera.getAllUnreadResults();
+
+        if (results.size() > 0) {
+            m_lastResults = results;
+        }
+
+        return results;
+    }
+
+    public List<PhotonPipelineResult> getLastVisionResults() {
+        return m_lastResults; 
     }
 
     public Optional<Pose2d> estimateRobotPose(PhotonPipelineResult result) {

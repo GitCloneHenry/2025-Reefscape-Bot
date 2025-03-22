@@ -4,6 +4,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.SerialPort.Port;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -31,11 +33,11 @@ import frc.robot.commands.IntakeCoralCommand;
 import frc.robot.commands.OuttakeAlgaeCommand;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.UnfoldCommand;
-import frc.robot.subsystems.AutoSubsystem;
 import frc.robot.subsystems.BillsLunchSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
+import frc.robot.subsystems.TagCenteringSubsystem;
 import frc.robot.subsystems.TiltRampSubsystem;
 
 public class RobotContainer {
@@ -52,9 +54,9 @@ public class RobotContainer {
 
   private final TiltRampSubsystem m_tiltRampSubsystem = new TiltRampSubsystem();
 
-  public final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
+  private final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
 
-  public final AutoSubsystem m_autoSubsystem = new AutoSubsystem();
+  private final TagCenteringSubsystem m_tagCenteringSubsystem = new TagCenteringSubsystem();
 
   public final RunCommand m_defaultDriveCommand;
   public final RunCommand m_defaultManipulatorCommand;
@@ -161,8 +163,8 @@ public class RobotContainer {
 
     // Trigger driverControllerU = m_driverController.povUp(); // Driver's DPAD Up
     // Trigger driverControllerD = m_driverController.povDown(); // Driver's DPAD Down
-    // Trigger driverControllerL = m_driverController.povLeft(); // Driver's DPAD Left
-    // Trigger driverControllerR = m_driverController.povRight(); // Driver's DPAD Right
+    Trigger driverControllerL = m_driverController.povLeft(); // Driver's DPAD Left
+    Trigger driverControllerR = m_driverController.povRight(); // Driver's DPAD Right
 
     Trigger driverControllerLB = m_driverController.leftBumper(); // Driver's Left Bumper
     // Trigger driverControllerRB = m_driverController.rightBumper(); // Driver's Right Bumper
@@ -192,6 +194,13 @@ public class RobotContainer {
 
     driverControllerX.onTrue(m_intakeAlgaeCommand);
     driverControllerB.onTrue(m_outtakeAlgaeCommand);
+
+    driverControllerL.onTrue(new ProxyCommand(
+      m_tagCenteringSubsystem.CenterOnTagCommand(new Translation2d(-0.72, 0.11), m_robotDrive.getVisionSubsystem())
+    ));
+    driverControllerR.onTrue(new ProxyCommand(
+      m_tagCenteringSubsystem.CenterOnTagCommand(new Translation2d(-0.72, -0.16), m_robotDrive.getVisionSubsystem())
+    ));
 
     driverControllerLT.onTrue(m_robotDrive.enableSlowModeCommand());
     driverControllerLT.onFalse(m_robotDrive.disableSlowModeCommand());
@@ -247,14 +256,14 @@ public class RobotContainer {
         m_manipulatorSubsystem
       ));
 
-    copilotControllerR.onTrue(new SequentialCommandGroup(
-        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(51) * 100.0),
-        new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.05)
+    copilotControllerL.onTrue(new SequentialCommandGroup(
+        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(44) * 100.0),
+        new ExtendManipulatorCommand(m_manipulatorSubsystem, 0.98)
     ));
 
-    copilotControllerL.onTrue(new SequentialCommandGroup(
-        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(42)),
-        new ExtendManipulatorCommand(m_manipulatorSubsystem, 0.95)
+    copilotControllerR.onTrue(new SequentialCommandGroup(
+        m_elevatorSubsystem.moveElevatorToHeightCommand(Units.inchesToMeters(53) * 100.0),
+        new ExtendManipulatorCommand(m_manipulatorSubsystem, 1.05)
     ));
 
     copilotControllerLC.onTrue(Commands.runOnce(
