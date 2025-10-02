@@ -24,7 +24,6 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ElevatorHomingCommand;
 import frc.robot.commands.ExtendElevatorCommand;
-import frc.robot.commands.ExtendLunchCommand;
 import frc.robot.commands.ExtendManipulatorCommand;
 import frc.robot.commands.FoldCommand;
 import frc.robot.commands.IncrementElevatorToLevelCommand;
@@ -37,7 +36,6 @@ import frc.robot.subsystems.BillsLunchSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ManipulatorSubsystem;
-import frc.robot.subsystems.TagCenteringSubsystem;
 import frc.robot.subsystems.TiltRampSubsystem;
 
 public class RobotContainer {
@@ -55,8 +53,6 @@ public class RobotContainer {
   private final TiltRampSubsystem m_tiltRampSubsystem = new TiltRampSubsystem();
 
   private final ElevatorSubsystem m_elevatorSubsystem = new ElevatorSubsystem();
-
-  private final TagCenteringSubsystem m_tagCenteringSubsystem = new TagCenteringSubsystem();
 
   public final RunCommand m_defaultDriveCommand;
   public final RunCommand m_defaultManipulatorCommand;
@@ -195,13 +191,6 @@ public class RobotContainer {
     driverControllerX.onTrue(m_intakeAlgaeCommand);
     driverControllerB.onTrue(m_outtakeAlgaeCommand);
 
-    driverControllerL.onTrue(new ProxyCommand(
-      m_tagCenteringSubsystem.CenterOnTagCommand(new Translation2d(-0.72, 0.11), m_robotDrive.getVisionSubsystem())
-    ));
-    driverControllerR.onTrue(new ProxyCommand(
-      m_tagCenteringSubsystem.CenterOnTagCommand(new Translation2d(-0.72, -0.16), m_robotDrive.getVisionSubsystem())
-    ));
-
     driverControllerLT.onTrue(m_robotDrive.enableSlowModeCommand());
     driverControllerLT.onFalse(m_robotDrive.disableSlowModeCommand());
 
@@ -211,7 +200,6 @@ public class RobotContainer {
     copilotControllerRB.onTrue(
       new SequentialCommandGroup(
         new IntakeCoralCommand(m_tiltRampSubsystem, m_manipulatorSubsystem),
-        new ExtendLunchCommand(m_billsLunchSubsystem, m_manipulatorSubsystem, m_elevatorSubsystem),
         new ExtendElevatorCommand(m_elevatorSubsystem, m_manipulatorSubsystem)));
     copilotControllerB.onTrue(new OuttakeCommand(m_manipulatorSubsystem));
     copilotControllerX.onTrue(
@@ -237,8 +225,7 @@ public class RobotContainer {
             m_tiltRampSubsystem,
             m_elevatorSubsystem,
             m_robotDrive, 
-            this,
-            m_billsLunchSubsystem));
+            this));
     copilotControllerRT.onTrue(
         new UnfoldCommand(m_manipulatorSubsystem, m_tiltRampSubsystem, this));
     
@@ -272,16 +259,17 @@ public class RobotContainer {
     m_robotDrive.setDefaultCommand(m_defaultDriveCommand);
   }
 
-  public Command runStartCommands() {
-    return new ElevatorHomingCommand(m_elevatorSubsystem)
-      .andThen(
-        new FoldCommand(
+  public Command getStartCommand() {
+    return new SequentialCommandGroup(
+      new ElevatorHomingCommand(m_elevatorSubsystem),
+      new FoldCommand(
           m_manipulatorSubsystem,
           m_tiltRampSubsystem,
           m_elevatorSubsystem,
           m_robotDrive,
-          this,
-          m_billsLunchSubsystem));
+          this),
+      m_billsLunchSubsystem.setSpeed(0.4)
+    );
   }
 
   public Command getAutonomousCommand() {

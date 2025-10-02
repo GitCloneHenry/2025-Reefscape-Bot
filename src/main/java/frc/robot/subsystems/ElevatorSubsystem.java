@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -18,7 +19,13 @@ import frc.robot.Constants.DIOConstants;
 import frc.robot.Constants.EncoderConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  private final TalonFX m_elevatorDrive = new TalonFX(CANConstants.kElevatorDriveID);
+  private final TalonFX m_elevatorDrivePrimary = new TalonFX(CANConstants.kElevatorDriveID);
+  private final TalonFX m_elevatorDriveSecondary = new TalonFX(CANConstants.kElevatorFollowerID);
+
+  private final Follower m_elevatorDriveFollower = new Follower(
+    m_elevatorDrivePrimary.getDeviceID(),
+    false
+  );
 
   private final TalonFXConfiguration m_elevatorDriveConfiguration = new TalonFXConfiguration();
 
@@ -57,9 +64,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     elevatorMotionMagic.MotionMagicAcceleration = 12000;
     elevatorMotionMagic.MotionMagicJerk = 24000;
 
-    m_elevatorDrive.getConfigurator().apply(m_elevatorDriveConfiguration, 0.050);
+    m_elevatorDrivePrimary.getConfigurator().apply(m_elevatorDriveConfiguration, 0.050);
+    m_elevatorDriveSecondary.getConfigurator().apply(m_elevatorDriveConfiguration, 0.050);
 
-    m_elevatorDrive.setNeutralMode(NeutralModeValue.Brake);
+    m_elevatorDrivePrimary.setNeutralMode(NeutralModeValue.Brake);
+    m_elevatorDriveSecondary.setNeutralMode(NeutralModeValue.Brake);
+
+    m_elevatorDriveSecondary.setControl(m_elevatorDriveFollower);
   }
 
   public boolean isSensorTriggered() {

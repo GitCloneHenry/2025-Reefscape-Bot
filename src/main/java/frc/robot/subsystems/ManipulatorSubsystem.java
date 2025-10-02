@@ -39,8 +39,8 @@ public class ManipulatorSubsystem extends SubsystemBase {
   private final MotionMagicVoltage m_motionMagicVoltage = new MotionMagicVoltage(0).withSlot(0);
 
   // Defines a DutyCycleEncoder which is a REV Through Bore Encoder.
-  private final DutyCycleEncoder m_manipulatorAngleEncoder =
-      new DutyCycleEncoder(DIOConstants.kManipulatorAngleEncoderID);
+  // private final DutyCycleEncoder m_manipulatorAngleEncoder =
+  //     new DutyCycleEncoder(DIOConstants.kManipulatorAngleEncoderID);
 
   private double m_desiredPosition = EncoderConstants.kDesiredManipulatorPositionExtended * 0.5;
 
@@ -116,7 +116,7 @@ public class ManipulatorSubsystem extends SubsystemBase {
     m_manipulatorDriveMotor.setNeutralMode(NeutralModeValue.Coast);
 
     // Configure the TalonFX's encoder to the position read by the absolute encoder.
-    m_manipulatorAngleMotor.setPosition((m_manipulatorAngleEncoder.get() - 0.7) * 100.0);
+    // m_manipulatorAngleMotor.setPosition((m_manipulatorAngleEncoder.get() - 0.7) * 100.0);
     // Configure the TalonFX to brake when no output is specified
     m_manipulatorAngleMotor.setNeutralMode(NeutralModeValue.Brake);
   }

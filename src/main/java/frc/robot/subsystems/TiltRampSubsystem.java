@@ -26,9 +26,9 @@ public class TiltRampSubsystem extends SubsystemBase {
   private final SparkMax m_tiltRampDriveMotor =
       new SparkMax(CANConstants.kTiltRampDriveMotorID, MotorType.kBrushless);
   ;
-  private final TalonFXS m_tiltRampAngleMotor = new TalonFXS(CANConstants.kTiltRampAngleMotorID);
+  private final TalonFX m_tiltRampAngleMotor = new TalonFX(CANConstants.kTiltRampAngleMotorID);
 
-  private final TalonFXSConfiguration m_tiltRampAngleConfiguration = new TalonFXSConfiguration();
+  private final TalonFXConfiguration m_tiltRampAngleConfiguration = new TalonFXConfiguration();
 
   private final SparkClosedLoopController m_tiltRampDriveController =
       m_tiltRampDriveMotor.getClosedLoopController();
@@ -54,8 +54,6 @@ public class TiltRampSubsystem extends SubsystemBase {
     Slot0Configs angleSlot0 = m_tiltRampAngleConfiguration.Slot0;
 
     MotionMagicConfigs angleMotionMagic = m_tiltRampAngleConfiguration.MotionMagic;
-
-    m_tiltRampAngleConfiguration.Commutation.MotorArrangement = MotorArrangementValue.Minion_JST;
 
     angleSlot0.kS = 0.0;
     angleSlot0.kV = 0.0;

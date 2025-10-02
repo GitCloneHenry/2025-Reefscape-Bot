@@ -23,12 +23,11 @@ public final class Constants {
     public static final int kManipulatorDriveMotorID = 3;
     public static final int kManipulatorAngleMotorID = 4;
     public static final int kElevatorDriveID = 1;
-    public static final int kFloorIntakeDriveMotorID = 10;
-    public static final int kFloorIntakeAngleMotorID = 6;
+    public static final int kElevatorFollowerID = 2;
     public static final int kClimberAngleMotorID = 5;
     public static final int kBillsLunchDriveID = 7;
     public static final int kTiltRampDriveMotorID = 9;
-    public static final int kTiltRampAngleMotorID = 2;
+    public static final int kTiltRampAngleMotorID = 6;
   }
 
   public static final class DIOConstants {

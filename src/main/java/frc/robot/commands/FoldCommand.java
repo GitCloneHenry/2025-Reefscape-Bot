@@ -33,7 +33,7 @@ public class FoldCommand extends Command {
   public void initialize() {
     m_manipulatorSubsystem.extendCoralManipulatorToPercentage(0.1);
     m_tiltRampSubsystem.moveToPosition(-75 * 10 / 90);
-    m_elevatorSubsystem.moveElevatorToPosition(0.0);
+    m_elevatorSubsystem.moveElevatorToPosition(10.0);
     m_driveSubsystem.enableSlowMode();
     m_billsLunchSubsystem.setPosition(0);
 
