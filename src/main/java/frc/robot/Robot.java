@@ -23,17 +23,10 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {
-    byte[] sendByteToStrip = { 1 };
-    m_robotContainer.sendByteToStrip(sendByteToStrip, 1);
-  }
+  public void disabledPeriodic() {}
 
   @Override
   public void autonomousInit() {
-    byte[] data = { 6 }; 
-
-    m_robotContainer.sendByteToStrip(data, 1);
-
     Command m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -42,29 +35,17 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {
-    byte[] data = { DriverStation.getAlliance().get() == DriverStation.Alliance.Red ? (byte) 4 : (byte) 5 }; 
-
-    m_robotContainer.sendByteToStrip(data, 1);
-  }
+  public void autonomousPeriodic() {}
 
   @Override
   public void teleopInit() {
-    byte[] data = { 6 }; 
-
-    m_robotContainer.sendByteToStrip(data, 1);
-
     // if (m_autonomousCommand != null) {
     //   m_autonomousCommand.cancel();
     // }
   }
 
   @Override
-  public void teleopPeriodic() {
-    byte[] data = { DriverStation.getAlliance().get() == DriverStation.Alliance.Red ? (byte) 4 : (byte) 5 }; 
-
-    m_robotContainer.sendByteToStrip(data, 1);
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void testInit() {
